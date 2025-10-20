@@ -1,25 +1,44 @@
-import {Text, TextInput, View} from "react-native";
-import {useState} from "react";
+import React, { useRef } from 'react';
+import { StyleSheet, View, Button, ViewProps } from 'react-native';
+import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
-export default function Index() {
-    const [text,setText] = useState<string>("");
+// ✅ forwardRef đặt tên function để tránh lỗi display-name
+const MyView = React.forwardRef<View, ViewProps>(function MyView(props, ref) {
+    return <View ref={ref} {...props} />;
+});
 
-  return (
-        <View style={{flex: 1, justifyContent: 'center'}}>
-            <TextInput
-                placeholder={"Enter here....."}
-                onChangeText={newText => setText(newText)}
-                defaultValue={text}
-                style={{
-                    height:40,
-                    padding: 5,
-                    marginHorizontal: 5,
-                    borderWidth: 1,
-                }}
-            />
-            <Text style={{padding: 10, fontSize: 42}} >
-                {text.split(' ').map(word => word && '@').join(' ')}
-            </Text>
+const MyAnimatedView = Animated.createAnimatedComponent(MyView);
+
+export default function App() {
+    const ref = useRef<View | null>(null);
+    const width = useSharedValue(100);
+
+    const handlePress = () => {
+        width.value = withSpring(width.value + 50);
+    };
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        width: width.value,
+    }));
+
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        box: {
+            height: 100,
+            backgroundColor: '#b58df1',
+            borderRadius: 20,
+            marginVertical: 64,
+        },
+    });
+
+    return (
+        <View style={styles.container}>
+            <MyAnimatedView ref={ref} style={[styles.box, animatedStyle]} />
+            <Button onPress={handlePress} title="Click me" />
         </View>
-  );
+    );
 }
