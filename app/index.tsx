@@ -36,9 +36,9 @@ export default function App() {
     });
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} className={'bg-red-200'}>
             <MyAnimatedView ref={ref} style={[styles.box, animatedStyle]} />
-            <Button onPress={handlePress} title="Click me" />
+            <Button onPress={handlePress} title="Click me"/>
         </View>
     );
 }
