@@ -4,7 +4,7 @@
     "slug": "MUSIC_APP_DEMO",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-music-my-app.png",
+    "icon": "./assets/images/my-icon.png",
 
     "scheme": "musicappdemo",
     "userInterfaceStyle": "automatic",
@@ -16,7 +16,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
-        "foregroundImage": "./assets/images/icon-music-my-app.png"
+        "foregroundImage": "./assets/images/my-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -24,7 +24,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/icon-music-my-app.png",
+      "favicon": "./assets/images/my-icon.png",
       "bundler": "metro"
     },
     "plugins": [
@@ -32,7 +32,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icon-music-my-app.png",
+          "image": "./assets/images/my-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
