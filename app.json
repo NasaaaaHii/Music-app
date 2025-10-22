@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "MUSIC_APP_DEMO",
+    "name": "Music App",
     "slug": "MUSIC_APP_DEMO",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "backgroundColor": "#E6FAF3",
     "scheme": "musicappdemo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
