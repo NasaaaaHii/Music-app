@@ -1,6 +1,8 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { FlatList, Image, ScrollView, Text, View } from "react-native";
+import { router } from "expo-router";
+import { FlatList, Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export default function library() {
   const category = [
@@ -87,17 +89,19 @@ export default function library() {
             <Text className="text-xl font-semibold text-gray-900 pl-6">
               Danh sách phát
             </Text>
-            <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-              <Feather
-                name="plus"
-                size={30}
-                color="#737373"
-                className="p-7 bg-[#f0eff4]"
-              />
-              <Text className="text-md font-semibold text-gray-900">
-                Tạo danh sách phát
-              </Text>
-            </View>
+            <Pressable onPress={() => router.push("/modal/create-playlist")}> 
+              <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
+                <Feather
+                  name="plus"
+                  size={30}
+                  color="#737373"
+                  className="p-7 bg-[#f0eff4]"
+                />
+                <Text className="text-md font-semibold text-gray-900">
+                  Tạo danh sách phát
+                </Text>
+              </View>
+            </Pressable>
 
             <FlatList
               scrollEnabled={false}
