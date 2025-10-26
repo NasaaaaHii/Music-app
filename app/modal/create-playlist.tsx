@@ -16,17 +16,30 @@ export default function CreatePlayList(){
 
     }, [activeButton])
 
-    return <SafeAreaView className="flex bg-white">
+    return <SafeAreaView className="flex bg-[#f4f3f8]">
             <View className="w-full h-full flex flex-col">
                 <View className="w-full">
-                    <Pressable onPress={() => router.back()} className="w-fit self-start">
-                        <Ionicons
-                        name="close-outline"
-                        size={30}
-                        color="#1c1c1c"
-                        className="p-4"
-                        />
-                    </Pressable>
+                    <View className="flex flex-row justify-between mb-5">
+                        <View className="w-fit">
+                            <Ionicons
+                                name="close-outline"
+                                size={30}
+                                color={"rgba(255,255,255,0)"}
+                                className="p-4"
+                            />
+                        </View>
+                        <View className="flex flex-row justify-center items-center h-full">
+                            <Text className="text-xl font-semibold">Tạo danh sách phát</Text>
+                        </View>
+                        <Pressable onPress={() => router.back()} className="w-fit">
+                            <Ionicons
+                            name="close-outline"
+                            size={30}
+                            color="#1c1c1c"
+                            className="p-4"
+                            />
+                        </Pressable>
+                    </View>
                     <View className="p-5">
                         <Text className="text-gray-500 text-sm">Tên danh sách phát</Text>
                         <TextInput placeholder="Nhập tên danh sách phát" className={`text-lg border-b-2 ${colorBorder}`} 
