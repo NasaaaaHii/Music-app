@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import ButtonAnimation from "../Animations/ButtonAnimation";
-import MusicCard from "../Components/MusicCard";
+import ButtonAnimation from "../../Animations/ButtonAnimation";
+import MusicCard from "../../Components/MusicCard";
 
 export default function Home() {
   const dataButton = [
@@ -34,9 +34,9 @@ export default function Home() {
   const hour = date.getHours();
 
   const images = {
-    nhac1: require("../../assets/images/nhac_1.png"),
-    nhac2: require("../../assets/images/nhac_2.png"),
-    nhac3: require("../../assets/images/nhac_3.png"),
+    nhac1: require("../../../assets/images/nhac_1.png"),
+    nhac2: require("../../../assets/images/nhac_2.png"),
+    nhac3: require("../../../assets/images/nhac_3.png"),
   };
 
   const gridData = [

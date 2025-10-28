@@ -1,24 +1,30 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { FlatList, Image, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
-export default function library() {
+export default function Index() {
   const category = [
     { icon: "heart", color: "#f9448d", title: "Yêu thích", count: 92 },
-    { icon: "star", color: "#facc15", title: "Nổi bật", count: 50 },
-    { icon: "arrow-down-circle", color: "#3b82f6", title: "Đã lưu", count: 30 },
+    { icon: "download", color: "#28a745", title: "Đã tải", count: 50 },
+    { icon: "save", color: "#fb923c", title: "Đã lưu", count: 30 },
   ];
 
   const playlist = [
     {
-      firstMusic: require("../../assets/images/nhac_1.png"),
+      firstMusic: require("../../../assets/images/nhac_1.png"),
       title: "Thư viện 1",
       count: 3,
     },
     {
-      firstMusic: require("../../assets/images/nhac_2.png"),
+      firstMusic: require("../../../assets/images/nhac_2.png"),
       title: "Thư viện 2",
       count: 6,
     },
@@ -46,6 +52,7 @@ export default function library() {
             {playlist.length} danh sách phát
           </Text>
         </View>
+
         {/* Main */}
         <View className="flex flex-col items-start gap-14 pb-80">
           {/* Danh mục */}
@@ -65,21 +72,36 @@ export default function library() {
               }}
               style={{ flexGrow: 0 }}
               renderItem={({ item }) => (
-                <View className="bg-white w-[130px] h-[130px] p-4 flex flex-col justify-between rounded-xl">
-                  <Feather
-                    name={item.icon as keyof typeof Feather.glyphMap}
-                    size={30}
-                    color={item.color}
-                  />
-                  <View>
-                    <Text className="text-md font-semibold text-gray-900">
-                      {item.title}
-                    </Text>
-                    <Text className="text-sm text-gray-600">
-                      {item.count} bài hát
-                    </Text>
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/library/playlists",
+                      params: {
+                        type: "category",
+                        icon: item.icon,
+
+                        title: item.title,
+                        count: item.count,
+                      },
+                    })
+                  }
+                >
+                  <View className="bg-white w-[130px] h-[130px] p-4 flex flex-col justify-between rounded-xl">
+                    <Feather
+                      name={item.icon as keyof typeof Feather.glyphMap}
+                      size={30}
+                      color={item.color}
+                    />
+                    <View>
+                      <Text className="text-md font-semibold text-gray-900">
+                        {item.title}
+                      </Text>
+                      <Text className="text-sm text-gray-600">
+                        {item.count} bài hát
+                      </Text>
+                    </View>
                   </View>
-                </View>
+                </Pressable>
               )}
             />
           </View>
@@ -89,7 +111,7 @@ export default function library() {
             <Text className="text-xl font-semibold text-gray-900 pl-6">
               Danh sách phát
             </Text>
-            <Pressable onPress={() => router.push("/modal/create-playlist")}> 
+            <Pressable onPress={() => router.push("/modal/create-playlist")}>
               <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
                 <Feather
                   name="plus"
@@ -115,32 +137,44 @@ export default function library() {
               }}
               style={{ flexGrow: 0 }}
               renderItem={({ item }) => (
-                <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-                  {item.firstMusic ? (
-                    <Image
-                      source={item.firstMusic}
-                      className="w-[80px] h-[80px]"
-                      resizeMode="cover"
-                    />
-                  ) : (
+                <Pressable onPress={() => {
+                  router.push({
+                      pathname: "/library/playlists",
+                      params: {
+                        type: "playlists",
+                        firstMusic: item.firstMusic,
 
-                    <Feather
-                      name="music"
-                      size={30}
-                      color="#737373"
-                      className="p-7 bg-[#f0eff4]"
-                    />
-                  )}
+                        title: item.title,
+                        count: item.count,
+                      },
+                  })
+                }}>
+                  <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
+                    {item.firstMusic ? (
+                      <Image
+                        source={item.firstMusic}
+                        className="w-[80px] h-[80px]"
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Feather
+                        name="music"
+                        size={30}
+                        color="#737373"
+                        className="p-7 bg-[#f0eff4]"
+                      />
+                    )}
 
-                  <View>
-                    <Text className="text-md font-semibold text-gray-900">
-                      {item.title}
-                    </Text>
-                    <Text className="text-sm text-gray-600">
-                      {item.count} bài hát
-                    </Text>
+                    <View>
+                      <Text className="text-md font-semibold text-gray-900">
+                        {item.title}
+                      </Text>
+                      <Text className="text-sm text-gray-600">
+                        {item.count} bài hát
+                      </Text>
+                    </View>
                   </View>
-                </View>
+                </Pressable>
               )}
             />
           </View>

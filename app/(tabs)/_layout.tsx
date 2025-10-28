@@ -15,9 +15,10 @@ export default function _layout() {
             backgroundColor: "#f4f3f8",
           },
         }}
+        initialRouteName="home"
       >
         <Tabs.Screen
-          name="index"
+          name="home"
           options={{
             title: "Trang chủ",
             tabBarIcon: ({ size, color }) => (
