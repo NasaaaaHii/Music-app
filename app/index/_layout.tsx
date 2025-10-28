@@ -4,6 +4,7 @@ import { View } from "react-native";
 import MiniPlayerSong from "../Components/MiniPlayerSong";
 export default function _layout() {
   return (
+<<<<<<< HEAD:app/(tabs)/_layout.tsx
     <View className="flex-1">
       <Tabs
         screenOptions={{
@@ -14,6 +15,26 @@ export default function _layout() {
             height: 56.5,
             backgroundColor: "#f4f3f8",
           },
+=======
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: "#00bc7d",
+        tabBarInactiveTintColor: "#4a5565",
+        tabBarStyle: {
+          height: 55,
+          backgroundColor: '#f4f3f8'
+        }
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Trang chủ",
+          tabBarIcon: ({ size, color }) => (
+            <Feather name="home" size={24} color={color} />
+          ),
+>>>>>>> 16bab324c152aac380ad0aa834bc73c225450a16:app/index/_layout.tsx
         }}
         initialRouteName="home"
       >

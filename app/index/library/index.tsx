@@ -36,7 +36,7 @@ export default function Index() {
   ];
 
   return (
-    <SafeAreaView className="flex bg-[#f4f3f8]">
+    <SafeAreaView className="flex-1 bg-[#f4f3f8]">
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="flex flex-col justify-center items-center gap-3 w-full p-10">
