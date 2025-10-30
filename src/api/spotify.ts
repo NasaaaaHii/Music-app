@@ -1,5 +1,5 @@
 const CLIENT_ID = null
-const CLIENT_SECRET= null
+const CLIENT_SECRET = null
 let TOKEN: string | null = null;
 
 async function LoadToken() {
@@ -31,7 +31,7 @@ export async function SearchAPITracks(query: string, limit: number) {
   if (TOKEN === null) {
     await LoadToken()
   }
-  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`;
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track,artist&limit=${limit}`;
   return fetch(url, {
     headers: {
       Authorization: `Bearer ${TOKEN}`,
@@ -43,6 +43,28 @@ export async function SearchAPITracks(query: string, limit: number) {
     })
     .then((res) => {
         return res.tracks.items
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+export async function GetAPINewTrack(limit: number){
+    if (TOKEN === null) {
+    await LoadToken()
+  }
+  const url = `https://api.spotify.com/v1/browse/new-releases?limit=${limit}`;
+  return fetch(url, {
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+    },
+    method: "GET",
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .then((res) => {
+      return res
     })
     .catch((err) => {
       console.log(err);

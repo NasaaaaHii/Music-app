@@ -1,7 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { View } from "react-native";
-import MiniPlayerSong from "../Components/MiniPlayerSong";
 export default function _layout() {
   return (
     <View className="flex-1">
@@ -45,9 +44,9 @@ export default function _layout() {
           }}
         />
       </Tabs>
-      <View className="absolute bottom-6 left-0 right-0 px-4">
+      {/* <View className="absolute bottom-6 left-0 right-0 px-4">
         <MiniPlayerSong />
-      </View>
+      </View> */}
     </View>
   );
 }

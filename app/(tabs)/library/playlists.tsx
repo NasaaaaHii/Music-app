@@ -1,22 +1,44 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { CircleArrowDown, CirclePlus } from 'lucide-react-native';
+import { CircleArrowDown, CirclePlus, EllipsisVertical, Heart } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Image, ImageProps, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  ImageProps,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SearchAPITracks } from "../../../src/api/spotify";
 
 export default function PlayLists() {
-  const params = useLocalSearchParams();
+  type Track = {
+    id: string;
+    name: string;
+    album: {
+      images: {
+        url: string;
+      }[],
+      artists: {
+        name: string
+      }[],
+    };
+  };
 
+  const params = useLocalSearchParams();
   const [iconHeader, setIconHeader] = useState<React.ReactNode>(null);
-  const [colorPlayer, setColorPlayer] = useState("bg-gray-300")
-  const [loading, setLoading] = useState(false)
-  const [tracks, setTracks] = useState(null)
+  const [colorPlayer, setColorPlayer] = useState("bg-gray-300");
+  const [loading, setLoading] = useState(false);
+  const [tracks, setTracks] = useState<Track[]>();
 
   useEffect(() => {
-    (params.count == '0' ? setColorPlayer("bg-gray-300") : setColorPlayer("bg-[#8546ec]"))
-  }, [params.count])
+    params.count == "0"
+      ? setColorPlayer("bg-gray-300")
+      : setColorPlayer("bg-[#8546ec]");
+  }, [params.count]);
 
   useEffect(() => {
     if (params.type === "category") {
@@ -30,8 +52,7 @@ export default function PlayLists() {
           />
         </View>
       );
-    }
-    else if (params.type === "playlists") {
+    } else if (params.type === "playlists") {
       if (params.firstMusic == null) {
         setIconHeader(
           <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl">
@@ -42,9 +63,8 @@ export default function PlayLists() {
               className="aspect-square p-28"
             />
           </View>
-        )
-      }
-      else {
+        );
+      } else {
         setIconHeader(
           <View className="flex px-20 flex-row justify-center items-center">
             <Image
@@ -52,25 +72,26 @@ export default function PlayLists() {
               className="aspect-square w-full rounded-xl"
             />
           </View>
-        )
+        );
       }
     }
   }, []);
 
-  async function LoadSearch(title: string, limit: number){
-    setLoading(true)
-  
-    const data = await SearchAPITracks(title, limit)
-    setTracks(data)
-    console.log(data)
+  async function LoadSearch(title: string, limit: number) {
+    setLoading(true);
+    setTracks([]);
 
-    setLoading(false)
+    const data = await SearchAPITracks(title, limit);
+    setTracks(data);
+    console.log(data);
+
+    setLoading(false);
   }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="flex flex-col justify-center items-center gap-5 w-full">
+        <View className="w-full flex flex-col items-center gap-6">
           <View className="w-full">
             <View className="flex flex-row justify-between gap-6">
               <Pressable onPress={() => router.back()} className="w-fit">
@@ -81,7 +102,7 @@ export default function PlayLists() {
                   className="p-4"
                 />
               </Pressable>
-<View className="flex flex-row justify-center items-center h-full">
+              <View className="flex flex-row justify-center items-center h-full">
                 <Text className="text-xl font-semibold">Danh sách phát</Text>
               </View>
               <Pressable onPress={() => router.back()} className="w-fit">
@@ -108,62 +129,59 @@ export default function PlayLists() {
               <CircleArrowDown size={24} strokeWidth={1.5} color={"#000"} />
               <Text className="text-sm">Tải xuống</Text>
             </Pressable>
-            <Pressable onPress={() => {
-              if (params.count !== '0') {
-                LoadSearch("Trình", 10)
-              }
-            }} className={`${colorPlayer} px-7 py-3 rounded-full`}>
-              <Text className="text-white text-lg font-semibold">Phát nhạc</Text>
+            <Pressable
+              onPress={() => {
+                if (params.count !== "0") {
+                  LoadSearch("Trình", 50);
+                }
+              }}
+              className={`${colorPlayer} px-7 py-3 rounded-full`}
+            >
+              <Text className="text-white text-lg font-semibold">
+                Phát nhạc
+              </Text>
             </Pressable>
-            <Pressable className="flex flex-col items-center" onPress={() => { }}>
+            <Pressable
+              className="flex flex-col items-center"
+              onPress={() => { router.push('/library/addMusic')
+               }}
+            >
               <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />
               <Text className="text-sm">Thêm bài</Text>
             </Pressable>
           </View>
-          <View>
-            {loading && <Text className="text-gray-400 text-center">Đang tải bài hát...</Text>}
 
-            {/* {tracks.map((track, i) => (
-              <View key={i} className="p-3 border-b border-gray-200">
-                <Text className="font-semibold">{track.title}</Text>
-                <Text className="text-gray-500">{track.artist}</Text>
-
-                <Pressable
-                  className="mt-2 bg-blue-500 p-2 rounded"
-                  onPress={async () => {
-                    const { sound } = await Audio.Sound.createAsync({ uri: track.audioUrl });
-                    await sound.playAsync();
-                  }}
-                >
-                  <Text className="text-white text-center">▶️ Phát</Text>
-                </Pressable>
-              </View>
-            ))} */}
-
-
-            {/* <FlatList
+          {/* Main */}
+          <View className="w-full pb-80">
+            {loading && (
+              <Text className="text-gray-400 text-center">
+                Đang tải bài hát...
+              </Text>
+            )}
+            <FlatList
+              scrollEnabled={false}
               data={tracks}
               keyExtractor={(item) => item.id}
+              contentContainerStyle = {{
+                gap: 10,
+                paddingHorizontal: 20,
+                paddingVertical: 0,
+              }}
+              
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={{
-                    flexDirection: "row",
-                    marginBottom: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  <Image
-                    source={{ uri: item.album.images[0].url }}
-style={{ width: 60, height: 60, borderRadius: 10, marginRight: 10 }}
-                  />
-                  <View>
-                    <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
-                    <Text>{item.artists.map((a) => a.name).join(", ")}</Text>
+                <View className="flex flex-row items-center">
+                  <Image source={{ uri: item.album.images[0].url }} style={{width: 70, height: 70, borderRadius: 10}}/>
+                  <View className="flex-1 mx-3">
+                    <Text className="font-semibold text-base">{item.name}</Text>
+                    <Text className="text-sm text-gray-500">{item.album.artists.map((artist) => (artist.name)).join(", ")}</Text>
                   </View>
-                </TouchableOpacity>
+                  <View className="flex flex-row items-center gap-1">
+                    <Heart width={22} strokeWidth={1.5}/>
+                    <EllipsisVertical width={22} strokeWidth={1.5} />
+                  </View>
+                </View>
               )}
-            /> */}
-
+            />
           </View>
         </View>
       </ScrollView>
