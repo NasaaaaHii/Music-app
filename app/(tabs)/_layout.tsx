@@ -1,5 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { UserRound } from "lucide-react-native";
 import { View } from "react-native";
 export default function _layout() {
   return (
@@ -40,6 +41,15 @@ export default function _layout() {
             title: "Thư viện",
             tabBarIcon: ({ color }) => (
               <Ionicons name="library-outline" size={24} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="account"
+          options={{
+            title: "Tài khoản",
+            tabBarIcon: ({ color }) => (
+              <UserRound size={24} color={color} />
             ),
           }}
         />
