@@ -1,5 +1,5 @@
-const CLIENT_ID = null
-const CLIENT_SECRET = null
+const CLIENT_ID = process.env.EXPO_PUBLIC_CLIENT_ID
+const CLIENT_SECRET = process.env.EXPO_PUBLIC_CLIENT_SECRET
 let TOKEN: string | null = null;
 
 async function LoadToken() {
