@@ -1,38 +1,57 @@
 import { AntDesign } from "@expo/vector-icons";
-import * as Google from "expo-auth-session/providers/google";
 import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { ArrowLeft, Music } from "lucide-react-native";
-import { useEffect, useState } from "react";
+
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-WebBrowser.maybeCompleteAuthSession();
+// import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { FIREBASE_AUTH, GoogleAuthProvider, signInWithPopup } from "../config/firebaseConfig";
+
+// GoogleSignin.configure({
+//   webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+//   iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+// });
 
 const Login = () => {
   // const redirectUri = 'exp://127.0.0.1:8081';
 
-  const [useInfo, setUserInfo] = useState(null);
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
-    iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-  });
+  // const [useInfo, setUserInfo] = useState(null);
+  // const [request, response, promptAsync] = Google.useAuthRequest({
+  //   androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+  //   iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+  //   webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+  // });
 
-  useEffect(() => {
-    console.log( process.env.EXPO_PUBLIC_CLIENT_ID )
-    console.log( process.env.EXPO_PUBLIC_CLIENT_SECRET )
-    console.log( process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID )
-    console.log( process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET )
-    console.log( process.env.EXPO_PUBLIC_BASE_URL )
-    console.log( process.env.EXPO_PUBLIC_SCHEME )
-    console.log( process.env.EXPO_PUBLIC_JWT_SECRET )
-    console.log( process.env.EXPO_PUBLIC_JWT_REFRESH_SECRET )
-    if (response?.type === "success") {
-      const { authentication } = response;
-      console.log("Access Token:", authentication?.accessToken);
+  // useEffect(() => {
+  //   if (response?.type === "success") {
+  //     const { authentication } = response;
+  //     console.log("Access Token:", authentication?.accessToken);
+  //   }
+  // }, [response]);
+
+
+  async function signIn() {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(FIREBASE_AUTH, provider);
+      console.log("User info:", result.user);
+    } catch (e) {
+      console.log(e);
     }
-  }, [response]);
+
+  }
+
+  // const [user, setUser] = useState();
+
+  // function handleAuthStateChanged(user: any) {
+  //   setUser(user);
+  // }
+
+  // useEffect(() => {
+  //   const subscriber = onAuthStateChanged(auth, handleAuthStateChanged);
+  //   return subscriber;
+  // }, []);
 
   return (
     <SafeAreaView className="bg-purple-900">
@@ -77,11 +96,14 @@ const Login = () => {
             </View>
             <Pressable
               onPress={() => {
-                promptAsync({
-                  // @ts-ignore
-                  useProxy: true,
-                  showInRecents: true,
-                });
+                // promptAsync({
+                //   // @ts-ignore
+                //   useProxy: true,
+                //   showInRecents: true,
+                // });
+
+                // console.log(auth);
+                signIn();
               }}
               className="bg-white w-[80%] flex flex-row gap-5 justify-center items-center rounded-full py-3 hover:bg-[#f0e5e5] active:bg-[#e5d6d6]"
             >
