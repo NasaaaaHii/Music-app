@@ -2,9 +2,11 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { UserRound } from "lucide-react-native";
 import { View } from "react-native";
+import MiniPlayerSong from "../Components/MiniPlayerSong";
+import { t } from "../theme";
 export default function _layout() {
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{ backgroundColor: t.surface }}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -12,7 +14,9 @@ export default function _layout() {
           tabBarInactiveTintColor: "#4a5565",
           tabBarStyle: {
             height: 56.5,
-            backgroundColor: "#f4f3f8",
+            backgroundColor: t.tabBarBg,
+            borderTopColor: t.tabBarBorder,
+            borderTopWidth: 1,
           },
         }}
         initialRouteName="home"
@@ -48,15 +52,13 @@ export default function _layout() {
           name="account"
           options={{
             title: "Tài khoản",
-            tabBarIcon: ({ color }) => (
-              <UserRound size={24} color={color} />
-            ),
+            tabBarIcon: ({ color }) => <UserRound size={24} color={color} />,
           }}
         />
       </Tabs>
-      {/* <View className="absolute bottom-6 left-0 right-0 px-4">
+      <View className="absolute bottom-6 left-0 right-0 px-4">
         <MiniPlayerSong />
-      </View> */}
+      </View>
     </View>
   );
 }

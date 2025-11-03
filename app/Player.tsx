@@ -88,7 +88,7 @@ const player = () => {
         <View className="mt-10">
           <MusicCard
             item={artistData}
-            variant="artists"
+            variant="artistsBoard"
             width="w-full"
             imageHeight="h-48"
           />

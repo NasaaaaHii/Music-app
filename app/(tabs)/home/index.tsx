@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { Moon } from "lucide-react-native";
 import { useState } from "react";
 import {
@@ -11,7 +12,7 @@ import {
 } from "react-native";
 import ButtonAnimation from "../../Animations/ButtonAnimation";
 import MusicCard from "../../Components/MusicCard";
-
+import { t } from "../../theme";
 export default function Home() {
   const dataButton = [
     { id: "1", title: "Tất cả" },
@@ -72,18 +73,16 @@ export default function Home() {
   ];
   return (
     <ScrollView
-      className="flex-1 bg-white"
+      className="flex-1 "
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        ></RefreshControl>
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+      style={{ backgroundColor: t.tabBarBg }}
     >
       <View className="px-5 pt-16 pb-6 mb-24">
         <View className="flex flex-row justify-between items-center mb-8">
           <View className="flex-1">
-            <Text className="font-bold text-4xl text-gray-900 mb-2">
+            <Text className="font-bold text-4xl mb-2" style={{ color: t.text }}>
               Chào buổi
               {hour >= 6 && hour <= 12
                 ? " sáng!"
@@ -91,12 +90,22 @@ export default function Home() {
                   ? " trưa!"
                   : " tối!"}
             </Text>
-            <Text className="font-normal text-base text-gray-700">
+            <Text
+              className="font-normal text-base"
+              style={{ color: t.textMuted }}
+            >
               Chào mừng bạn đến với Music - App
             </Text>
           </View>
-          <TouchableOpacity className="bg-gray-100 p-3 rounded-full">
-            <Moon color="#1f2937" size={22} strokeWidth={2.5} />
+          <TouchableOpacity
+            className="p-3 rounded-full"
+            style={{
+              backgroundColor: t.cardBg,
+              borderColor: t.tabBarBorder,
+              borderWidth: 1,
+            }}
+          >
+            <Moon color={t.text} size={28} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
         <FlatList
@@ -113,7 +122,9 @@ export default function Home() {
           contentContainerStyle={{ gap: 12 }}
         />
         <View className="mt-12">
-          <Text className="font-bold text-xl">Đã nghe gần đây</Text>
+          <Text className="font-bold text-xl" style={{ color: t.text }}>
+            Đã nghe gần đây
+          </Text>
           <FlatList
             className="mt-6"
             data={gridData}
@@ -127,29 +138,56 @@ export default function Home() {
           />
         </View>
         <View className="mt-10">
-          <Text className="font-bold text-xl mb-4">Gợi ý cho bạn</Text>
+          <Text className="font-bold text-xl mb-4" style={{ color: t.text }}>
+            Gợi ý cho bạn
+          </Text>
           <TouchableOpacity className="relative overflow-hidden rounded-2xl">
             <Image source={images.nhac2} className="w-full h-48" />
             <View className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent justify-end p-6">
-              <Text className="text-white/80 font-bold text-3xl mb-1">
+              <Text
+                className="font-bold text-3xl mb-1"
+                style={{ color: t.text }}
+              >
                 Nhạc hot tuần
               </Text>
-              <Text className="text-white/80 mb-3 text-sm">
+              <Text className="mb-3 text-sm" style={{ color: t.textMuted }}>
                 Top 50 bài hát hay nhất tuần
               </Text>
-              <View className="bg-white rounded-2xl w-24 h-10 flex items-center">
-                <Text className="font-bold text-sm items-center pt-2">
+              <LinearGradient
+                colors={t.buttonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  borderRadius: 12,
+                  width: 110,
+                  height: 40,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  shadowColor: t.primary,
+                  shadowOpacity: 0.4,
+                  shadowRadius: 10,
+                  elevation: 6,
+                }}
+              >
+                <Text
+                  className="font-bold text-sm"
+                  style={{ color: "#ffffff" }}
+                >
                   Phát ngay
                 </Text>
-              </View>
+              </LinearGradient>
             </View>
           </TouchableOpacity>
         </View>
         <View className="mt-8">
           <View className="flex flex-row justify-between items-center">
-            <Text className="font-bold text-xl">Playlist đề xuất</Text>
+            <Text className="font-bold text-xl" style={{ color: t.text }}>
+              Playlist đề xuất
+            </Text>
             <TouchableOpacity>
-              <Text className="text-blue-500 font-semibold">Xem tất cả</Text>
+              <Text className="font-semibold" style={{ color: t.primary }}>
+                Xem tất cả
+              </Text>
             </TouchableOpacity>
           </View>
           <FlatList
@@ -166,17 +204,21 @@ export default function Home() {
         </View>
         <View className="mt-6">
           <View className="flex flex-row justify-between items-center">
-            <Text className="text-xl font-bold text-gray-900">
+            <Text className="text-xl font-bold" style={{ color: t.text }}>
               Album mới phát hành
             </Text>
             <TouchableOpacity>
-              <Text className="text-blue-500 font-semibold">Xem tất cả</Text>
+              <Text className="font-semibold" style={{ color: t.primary }}>
+                Xem tất cả
+              </Text>
             </TouchableOpacity>
           </View>
           <FlatList
             className="mt-6"
             data={albumData}
-            renderItem={({ item }) => <MusicCard item={item} variant="album" />}
+            renderItem={({ item }) => (
+              <MusicCard item={item} variant="albumBoard" />
+            )}
             horizontal
             showsHorizontalScrollIndicator={false}
           />

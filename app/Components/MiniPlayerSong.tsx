@@ -8,7 +8,7 @@ export default function MiniPlayerSong() {
   const [progress, setProgress] = useState(12);
 
   const handleOpenFullPlayer = () => {
-    router.push("/Player");
+    router.push("/AlbumPlaylist");
   };
 
   return (
