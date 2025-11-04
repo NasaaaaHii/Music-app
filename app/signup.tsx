@@ -108,7 +108,7 @@ export default function SignUp() {
                 Đăng ký
               </Text>
               <Text className="text-white font-light text-base mt-2">
-                Chào mừng bạn đến với thế giới của Negav
+                Chào mừng bạn đến với thế giới âm nhạc
               </Text>
             </View>
 
