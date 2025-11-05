@@ -1,5 +1,5 @@
-const CLIENT_ID = process.env.EXPO_PUBLIC_CLIENT_ID
-const CLIENT_SECRET = process.env.EXPO_PUBLIC_CLIENT_SECRET
+const CLIENT_ID = process.env.EXPO_PUBLIC_CLIENT_ID;
+const CLIENT_SECRET = process.env.EXPO_PUBLIC_CLIENT_SECRET;
 let TOKEN: string | null = null;
 
 async function LoadToken() {
@@ -29,7 +29,7 @@ function GetAPIToken() {
 
 export async function SearchAPITracks(query: string, limit: number) {
   if (TOKEN === null) {
-    await LoadToken()
+    await LoadToken();
   }
   const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track,artist&limit=${limit}`;
   return fetch(url, {
@@ -42,16 +42,16 @@ export async function SearchAPITracks(query: string, limit: number) {
       return res.json();
     })
     .then((res) => {
-        return res.tracks.items
+      return res.tracks.items;
     })
     .catch((err) => {
       console.log(err);
     });
 }
 
-export async function GetAPINewTrack(limit: number){
-    if (TOKEN === null) {
-    await LoadToken()
+export async function GetAPINewTrack(limit: number) {
+  if (TOKEN === null) {
+    await LoadToken();
   }
   const url = `https://api.spotify.com/v1/browse/new-releases?limit=${limit}`;
   return fetch(url, {
@@ -64,9 +64,20 @@ export async function GetAPINewTrack(limit: number){
       return res.json();
     })
     .then((res) => {
-      return res
+      return res;
     })
     .catch((err) => {
       console.log(err);
     });
+}
+
+export async function GetTrack(id: string) {
+  if (TOKEN === null) await LoadToken();
+  const url = `https://api.spotify.com/v1/tracks/${id}`;
+  return fetch(url, {
+    headers: { Authorization: `Bearer ${TOKEN}` },
+    method: "GET"
+  }).then((res) => {
+    return res.json()
+  }).catch((err)=>{console.log(err)})
 }
