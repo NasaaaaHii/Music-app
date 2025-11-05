@@ -10,13 +10,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { sendEmailVerification } from "firebase/auth";
+import { addDoc, collection } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   FIREBASE_AUTH,
+  FIRESTORE_DB,
   getError,
   onAuthStateChanged,
+  sendEmailVerification
 } from "../config/firebaseConfig";
 
 export default function SignUp() {
@@ -53,29 +55,43 @@ export default function SignUp() {
   if (valid) return <Redirect href="/(tabs)/home" />;
 
   async function signUpFunction() {
-    try{
-      if(password !== confirmPassword) {
-        alert("Mật khẩu không khớp nhau!")
-        return
+    try {
+      if (password !== confirmPassword) {
+        alert("Mật khẩu không khớp nhau!");
+        return;
       }
-      if(!isChecked){
-        alert("Vui lòng chấp nhận thỏa thuận")
-        return
+      if (!isChecked) {
+        alert("Vui lòng chấp nhận thỏa thuận");
+        return;
       }
-      const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
-      const user = userCredential.user
-      await sendEmailVerification(user)
-      alert("Đăng ký tài khoản thành công!" + " Một email xác minh đã được gửi đến " + email + ". Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.")
+      const userCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      await sendEmailVerification(user);
+      await addDoc(collection(FIRESTORE_DB, "users", user.uid), {
+        email: user.email,
+        liked_songs: [],
+        playlists: [],
+      });
+      alert(
+        "Đăng ký tài khoản thành công!" +
+          " Một email xác minh đã được gửi đến " +
+          email +
+          ". Vui lòng kiểm tra hộp thư để kích hoạt tài khoản."
+      );
       router.push({
         pathname: "/login",
         params: {
-          "emailSignUp": email,
-          "passwordSignUp": password,
-        }
-      })
-    }
-    catch(e: any){
-      alert(getError(e.code))
+          emailSignUp: email,
+          passwordSignUp: password,
+        },
+      });
+    } catch (e: any) {
+      alert(e.message);
+      // alert(getError(e.code));
     }
   }
 
@@ -179,7 +195,7 @@ export default function SignUp() {
 
               <Pressable
                 onPress={() => {
-                  signUpFunction()
+                  signUpFunction();
                 }}
                 className="bg-white w-[80%] max-w-[500px] flex flex-row gap-5 justify-center items-center rounded-full py-3 hover:bg-[#f0e5e5] active:bg-[#e5d6d6]"
               >
