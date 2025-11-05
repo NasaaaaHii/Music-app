@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { addDoc, collection } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
@@ -71,7 +71,7 @@ export default function SignUp() {
       );
       const user = userCredential.user;
       await sendEmailVerification(user);
-      await addDoc(collection(FIRESTORE_DB, "users", user.uid), {
+      await setDoc(doc(FIRESTORE_DB, "users", user.uid), {
         email: user.email,
         liked_songs: [],
         playlists: [],
