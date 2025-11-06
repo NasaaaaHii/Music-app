@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import { useAudioPlayer } from 'expo-audio';
 import { router, useLocalSearchParams } from "expo-router";
 import { CircleArrowDown, CirclePlus, EllipsisVertical, Heart } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -13,8 +12,8 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GetTrack, SearchAPITracks } from "../../../src/api/spotify";
 import MusicEqualizer from "../../Components/MusicEqualizer";
+
 
 export default function PlayLists() {
   type Track = {
@@ -37,8 +36,6 @@ export default function PlayLists() {
   const [tracks, setTracks] = useState<Track[]>();
   const [posMusicPlaying, setPosMusicPlaying] = useState("")
   const [uriMusic, setUriMusic] = useState("")
-  const player = useAudioPlayer(uriMusic);
-        // <Button title="Play Sound" onPress={() => player.play()} />
 
   useEffect(() => {
     params.count == "0"
@@ -85,29 +82,29 @@ export default function PlayLists() {
 
 
 
-  async function logData() {
-    if(posMusicPlaying === "") return
-    try{
-      const data = await GetTrack(posMusicPlaying)
-      console.log(data)
-    }
-    catch(e){
-      console.log(e)
-    }
-  }
+  // async function logData() {
+  //   if(posMusicPlaying === "") return
+  //   try{
+  //     const data = await GetTrack(posMusicPlaying)
+  //     console.log(data)
+  //   }
+  //   catch(e){
+  //     console.log(e)
+  //   }
+  // }
   useEffect(() => {
-    logData()
+    // logData()
   }, [posMusicPlaying])
 
   async function LoadSearch(title: string, limit: number) {
-    setLoading(true);
-    setTracks([]);
+    // setLoading(true);
+    // setTracks([]);
 
-    const data = await SearchAPITracks(title, limit);
-    setTracks(data);
-    console.log(data);
+    // const data = await SearchAPITracks(title, limit);
+    // setTracks(data);
+    // console.log(data);
 
-    setLoading(false);
+    // setLoading(false);
   }
 
   return (
