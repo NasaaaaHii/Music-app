@@ -1,6 +1,11 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { CircleArrowDown, CirclePlus, EllipsisVertical, Heart } from "lucide-react-native";
+import {
+  CircleArrowDown,
+  CirclePlus,
+  EllipsisVertical,
+  Heart,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -9,11 +14,13 @@ import {
   Pressable,
   ScrollView,
   Text,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { searchTrackAPI } from "../../../config/musicApi";
 import MusicEqualizer from "../../Components/MusicEqualizer";
 
+import { useAudioPlayer } from "expo-audio";
 
 export default function PlayLists() {
   type Track = {
@@ -22,10 +29,10 @@ export default function PlayLists() {
     album: {
       images: {
         url: string;
-      }[],
+      }[];
       artists: {
-        name: string
-      }[],
+        name: string;
+      }[];
     };
   };
 
@@ -34,8 +41,10 @@ export default function PlayLists() {
   const [colorPlayer, setColorPlayer] = useState("bg-gray-300");
   const [loading, setLoading] = useState(false);
   const [tracks, setTracks] = useState<Track[]>();
-  const [posMusicPlaying, setPosMusicPlaying] = useState("")
-  const [uriMusic, setUriMusic] = useState("")
+  const [posMusicPlaying, setPosMusicPlaying] = useState("");
+  const player = useAudioPlayer(
+    "https://discoveryprovider.audius.co/v1/tracks/66622/stream?app_name=musicapp"
+  );
 
   useEffect(() => {
     params.count == "0"
@@ -80,23 +89,19 @@ export default function PlayLists() {
     }
   }, []);
 
-
-
-  // async function logData() {
-  //   if(posMusicPlaying === "") return
-  //   try{
-  //     const data = await GetTrack(posMusicPlaying)
-  //     console.log(data)
-  //   }
-  //   catch(e){
-  //     console.log(e)
-  //   }
-  // }
+  async function logData() {
+    try {
+      const data = await searchTrackAPI("Baby");
+      console.log(data);
+    } catch (e) {
+      console.log(e);
+    }
+  }
   useEffect(() => {
-    // logData()
-  }, [posMusicPlaying])
+    logData();
+  }, []);
 
-  async function LoadSearch(title: string, limit: number) {
+  function PlayTrack() {
     // setLoading(true);
     // setTracks([]);
 
@@ -105,6 +110,10 @@ export default function PlayLists() {
     // console.log(data);
 
     // setLoading(false);
+    // player.play();
+
+    player.play();
+    // console.log(getTrackStreamUrl("66622"))
   }
 
   return (
@@ -144,14 +153,20 @@ export default function PlayLists() {
             </Text>
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">
-            <Pressable className="flex flex-col items-center">
+            <Pressable
+              className="flex flex-col items-center"
+              onPress={() => {
+                // player.seekTo(0);
+                player.pause()
+              }}
+            >
               <CircleArrowDown size={24} strokeWidth={1.5} color={"#000"} />
               <Text className="text-sm">Tải xuống</Text>
             </Pressable>
             <Pressable
               onPress={() => {
                 if (params.count !== "0") {
-                  LoadSearch("Trình", 50);
+                  PlayTrack();
                 }
               }}
               className={`${colorPlayer} px-7 py-3 rounded-full`}
@@ -162,8 +177,9 @@ export default function PlayLists() {
             </Pressable>
             <Pressable
               className="flex flex-col items-center"
-              onPress={() => { router.push('/library/addMusic')
-               }}
+              onPress={() => {
+                router.push("/library/addMusic");
+              }}
             >
               <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />
               <Text className="text-sm">Thêm bài</Text>
@@ -181,30 +197,40 @@ export default function PlayLists() {
               scrollEnabled={false}
               data={tracks}
               keyExtractor={(item) => item.id}
-              contentContainerStyle = {{
+              contentContainerStyle={{
                 paddingHorizontal: 20,
                 paddingVertical: 0,
               }}
-              
               renderItem={({ item }) => (
-                <View className={`flex flex-row items-center p-3 ${ posMusicPlaying === item.id ? 'bg-gray-100' : '' } `}>
-                  <Pressable 
-                    onPress={()=>{ setPosMusicPlaying(item.id) }}
-                    className={`${ posMusicPlaying === item.id ? 'opacity-50' : 'opacity-100' }`}
-                    >
-                    <Image source={{ uri: item.album.images[0].url }} style={{width: 70, height: 70, borderRadius: 10}}/>
-                    {posMusicPlaying === item.id && 
+                <View
+                  className={`flex flex-row items-center p-3 ${posMusicPlaying === item.id ? "bg-gray-100" : ""} `}
+                >
+                  <Pressable
+                    onPress={() => {
+                      setPosMusicPlaying(item.id);
+                    }}
+                    className={`${posMusicPlaying === item.id ? "opacity-50" : "opacity-100"}`}
+                  >
+                    <Image
+                      source={{ uri: item.album.images[0].url }}
+                      style={{ width: 70, height: 70, borderRadius: 10 }}
+                    />
+                    {posMusicPlaying === item.id && (
                       <View className="absolute top-0 bottom-0 right-0 left-0 felx justify-center items-center">
                         <MusicEqualizer />
                       </View>
-                    }
+                    )}
                   </Pressable>
                   <View className="flex-1 mx-3">
                     <Text className="font-semibold text-base">{item.name}</Text>
-                    <Text className="text-sm text-gray-500">{item.album.artists.map((artist) => (artist.name)).join(", ")}</Text>
+                    <Text className="text-sm text-gray-500">
+                      {item.album.artists
+                        .map((artist) => artist.name)
+                        .join(", ")}
+                    </Text>
                   </View>
                   <View className="flex flex-row items-center gap-1">
-                    <Heart width={22} strokeWidth={1.5}/>
+                    <Heart width={22} strokeWidth={1.5} />
                     <EllipsisVertical width={22} strokeWidth={1.5} />
                   </View>
                 </View>
