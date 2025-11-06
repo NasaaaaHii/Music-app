@@ -10,12 +10,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { doc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import userBUS from "../backend/BUS/userBUS";
 import {
   createUserWithEmailAndPassword,
   FIREBASE_AUTH,
-  FIRESTORE_DB,
   getError,
   onAuthStateChanged,
   sendEmailVerification
@@ -71,11 +70,7 @@ export default function SignUp() {
       );
       const user = userCredential.user;
       await sendEmailVerification(user);
-      await setDoc(doc(FIRESTORE_DB, "users", user.uid), {
-        email: user.email,
-        liked_songs: [],
-        playlists: [],
-      });
+      await userBUS.addUser(user.email!, user.uid)
       alert(
         "Đăng ký tài khoản thành công!" +
           " Một email xác minh đã được gửi đến " +
@@ -90,8 +85,7 @@ export default function SignUp() {
         },
       });
     } catch (e: any) {
-      alert(e.message);
-      // alert(getError(e.code));
+      alert(getError(e.code));
     }
   }
 

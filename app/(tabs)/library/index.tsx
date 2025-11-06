@@ -1,6 +1,5 @@
-import { Feather } from "@expo/vector-icons";
 import { Redirect, router } from "expo-router";
-import { ArrowDownToLine, Heart, LibraryBig, Plus } from "lucide-react-native";
+import { ArrowDownToLine, Heart, LibraryBig, Music, Plus } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -12,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import userBUS from "../../../backend/BUS/userBUS";
 import {
   FIREBASE_AUTH,
   getError,
@@ -38,12 +38,28 @@ export default function Index() {
   ];
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [DBUser, setDBUser] = useState<any>(null)
+
+  async function loadDB(uid: string) {
+    try{
+      const data = await userBUS.getUserById(uid)
+      console.log(data)
+      setDBUser(data)
+    }
+    catch(e){
+      const err = e as Error
+      console.log(err.message)
+    }
+  }
 
   async function init() {
     try {
       setLoadingPage(true);
-      const f = await onAuthStateChanged(FIREBASE_AUTH, (user) => {
-        if (user && user.emailVerified) setValid(user);
+      const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+        if (user && user.emailVerified) {
+          setValid(user)
+          await loadDB(user?.uid)
+        }
         setLoadingPage(false);
       });
       return f;
@@ -54,7 +70,6 @@ export default function Index() {
 
   useEffect(() => {
     init();
-    console.log(valid.email)
   }, []);
 
   if (loadingPage)
@@ -75,7 +90,7 @@ export default function Index() {
           </View>
           <Text className="text-3xl font-bold text-gray-900">Thư viện</Text>
           <Text className="text-gray-600">
-            {playlist.length} danh sách phát
+            {DBUser.playlists.length} danh sách phát
           </Text>
         </View>
 
@@ -106,7 +121,7 @@ export default function Index() {
                     <Text className="text-md font-semibold text-gray-900">
                       Yêu thích
                     </Text>
-                    <Text className="text-sm text-gray-600">0 bài hát</Text>
+                    <Text className="text-sm text-gray-600">{ DBUser.liked.length } bài hát</Text>
                   </View>
                 </View>
               </Pressable>
@@ -130,7 +145,7 @@ export default function Index() {
                     <Text className="text-md font-semibold text-gray-900">
                       Đã tải
                     </Text>
-                    <Text className="text-sm text-gray-600">1 bài hát</Text>
+                    <Text className="text-sm text-gray-600">{ 0 } bài hát</Text>
                   </View>
                 </View>
               </Pressable>
@@ -144,8 +159,8 @@ export default function Index() {
             </Text>
             <Pressable onPress={() => router.push("/modal/create-playlist")}>
               <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-                <View className="p-7 bg-[#f0eff4]">
-                  <Plus size={30} color="#737373" />
+                <View className="p-6 bg-[#f0eff4]">
+                  <Plus size={40} color="#737373" />
                 </View>
                 <Text className="text-md font-semibold text-gray-900">
                   Tạo danh sách phát
@@ -183,18 +198,13 @@ export default function Index() {
                     {item.firstMusic ? (
                       <Image
                         source={item.firstMusic}
-                        className="w-[80px] h-[80px]"
-                        resizeMode="cover"
+                        style={{ width: 83, height: 83 }}
                       />
                     ) : (
-                      <Feather
-                        name="music"
-                        size={30}
-                        color="#737373"
-                        className="p-7 bg-[#f0eff4]"
-                      />
+                      <View className="p-6 bg-[#f0eff4]">
+                        <Music size={40} color="#737373" />
+                      </View>
                     )}
-
                     <View>
                       <Text className="text-md font-semibold text-gray-900">
                         {item.title}
