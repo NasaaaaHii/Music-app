@@ -7,7 +7,7 @@ import { t } from "../theme";
 export default function _layout() {
   return (
     <View className="flex-1" style={{ backgroundColor: t.surface }}>
-      <Tabs
+      <Tabs 
         initialRouteName="home"
         screenOptions={{
           headerShown: false,
@@ -16,6 +16,7 @@ export default function _layout() {
             position: "absolute",
             bottom: 20,
             height: 40,
+            left: 20,
             width: 350,
             borderRadius: 35,
             borderTopWidth: 0,
