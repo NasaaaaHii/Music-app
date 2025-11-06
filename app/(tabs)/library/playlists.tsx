@@ -57,7 +57,7 @@ export default function PlayLists() {
       setIconHeader(
         <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl">
           <Feather
-            name={params.icon as keyof typeof Feather.glyphMap}
+            name={"heart"}
             size={100}
             color={"#d0cfd5"}
             className="aspect-square p-28"
@@ -146,10 +146,10 @@ export default function PlayLists() {
           {iconHeader}
           <View>
             <Text className="font-semibold text-xl text-center">
-              {params.title}
+              {"Yêu thích"}
             </Text>
             <Text className="text-gray-500 text-base text-center">
-              {params.count} bài hát
+              {0} bài hát
             </Text>
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">

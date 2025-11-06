@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { DeviceEventEmitter, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import playlistBUS from "../../backend/BUS/playlistBUS";
+import { FIREBASE_AUTH } from "../../config/firebaseConfig";
 
 
 export default function CreatePlayList() {
@@ -11,8 +12,7 @@ export default function CreatePlayList() {
   const [activeButton, setActiveButton] = useState(false);
   const [colorButton, setColorButton] = useState("bg-[#eaeaea] text-[#959595]");
   const [namePlaylists, setNamePlaylists] = useState("")
-  const { uid } = useLocalSearchParams();
-  
+  const uid = FIREBASE_AUTH.currentUser?.uid
 
   useEffect(() => {
     setColorButton(

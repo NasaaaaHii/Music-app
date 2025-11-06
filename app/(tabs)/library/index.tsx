@@ -18,7 +18,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { create } from "zustand";
 import playlistBUS from "../../../backend/BUS/playlistBUS";
 import userBUS from "../../../backend/BUS/userBUS";
 import {
@@ -26,11 +25,6 @@ import {
   getError,
   onAuthStateChanged,
 } from "../../../config/firebaseConfig";
-
-export const usePlaylistStore = create((set) => ({
-  shouldReload: false,
-  setReload: (val: boolean) => set({ shouldReload: val }),
-}));
 
 export default function Index() {
   const playlist = [
