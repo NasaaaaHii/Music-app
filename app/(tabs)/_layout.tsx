@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { UserRound } from "lucide-react-native";
+import { SettingsIcon } from "lucide-react-native";
 import { View } from "react-native";
 import { t } from "../theme";
 export default function _layout() {
@@ -48,10 +48,10 @@ export default function _layout() {
           }}
         />
         <Tabs.Screen
-          name="account"
+          name="setting"
           options={{
-            title: "Tài khoản",
-            tabBarIcon: ({ color }) => <UserRound size={24} color={color} />,
+            title: "Setting",
+            tabBarIcon: ({ color }) => <SettingsIcon size={24} color={color} />,
           }}
         />
       </Tabs>

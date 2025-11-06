@@ -100,12 +100,12 @@ export default function Home() {
           <TouchableOpacity
             className="p-3 rounded-full"
             style={{
-              backgroundColor: t.cardBg,
+              backgroundColor: t.primary,
               borderColor: t.tabBarBorder,
               borderWidth: 1,
             }}
           >
-            <Moon color={t.text} size={28} strokeWidth={2.5} />
+            <Moon color={t.cardBg} size={28} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
         <FlatList
@@ -169,10 +169,7 @@ export default function Home() {
                   elevation: 6,
                 }}
               >
-                <Text
-                  className="font-bold text-sm"
-                  style={{ color: "#ffffff" }}
-                >
+                <Text className="font-bold text-sm" style={{ color: t.text }}>
                   Phát ngay
                 </Text>
               </LinearGradient>
