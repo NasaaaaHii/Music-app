@@ -52,17 +52,32 @@ export default function MusicCard({
             </Text>
           </View>
         </View>
-        <TouchableOpacity
-          className={`px-6 py-2 rounded-full border-2 ${isFollow ? "bg-gray-900 border-gray-900" : "bg-white border-gray-900"}`}
-          onPress={() => setIsFollow(!isFollow)}
-          activeOpacity={0.7}
-        >
-          <Text
-            className={`font-bold text-sm ${isFollow ? "text-white" : "text-gray-900"}`}
+        {isFollow ? (
+          <LinearGradient
+            colors={t.buttonGradient ?? [t.primary, t.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ borderRadius: 9999 }}
           >
-            {isFollow ? "Đang theo dõi" : "Theo dõi"}
-          </Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              className="px-6 py-2 rounded-full"
+              onPress={() => setIsFollow(false)}
+              activeOpacity={0.8}
+            >
+              <Text className="font-bold text-sm" style={{ color: "#001018" }}>
+                Đang theo dõi
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        ) : (
+          <TouchableOpacity
+            className="px-6 py-2 rounded-full border-2"
+            onPress={() => setIsFollow(!isFollow)}
+            activeOpacity={0.7}
+          >
+            <Text className="font-bold text-sm">Theo dõi</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -103,7 +118,8 @@ export default function MusicCard({
 
   return (
     <TouchableOpacity
-      className={`mr-4 ${width} rounded-lg bg-gray-100 overflow-hidden`}
+      className={`mr-4 ${width} rounded-lg  overflow-hidden`}
+      style={{ backgroundColor: t.textMuted }}
     >
       <Image source={imageSource} className={`w-full ${imageHeight}`} />
       <View className="p-3">
