@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { Heart, Pause, Play } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { t } from "../theme";
 export default function MiniPlayerSong() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -55,6 +56,7 @@ export default function MiniPlayerSong() {
             }}
             activeOpacity={0.7}
             className="bg-white p-2 rounded-full"
+            style={{ backgroundColor: t.primary }}
           >
             {isPlaying ? (
               <Pause color="#000" size={20} fill="#000" />
@@ -66,8 +68,8 @@ export default function MiniPlayerSong() {
       </View>
       <View className="h-1 bg-gray-200 mx-2">
         <View
-          className="h-full bg-green-500"
-          style={{ width: `${progress}%` }}
+          className="h-full"
+          style={{ width: `${progress}%`, backgroundColor: t.primaryDark }}
         />
       </View>
     </TouchableOpacity>

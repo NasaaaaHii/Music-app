@@ -5,7 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/my-icon.png",
-
     "scheme": "musicappdemo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -20,7 +19,11 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.MUSIC_APP_DEMO"
+      "package": "com.anonymous.MUSIC_APP_DEMO",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "output": "static",
@@ -40,11 +43,21 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-web-browser",
+      "expo-asset",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "827c4a3d-582e-4455-a1b2-8b5c189421bd"
+      }
+    },
+    "owner": "cuong0905"
   }
 }

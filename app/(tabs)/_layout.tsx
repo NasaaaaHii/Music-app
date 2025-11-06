@@ -86,7 +86,7 @@ export default function _layout() {
         />
 
         <Tabs.Screen
-          name="account"
+          name="setting"
           options={{
             tabBarIcon: ({ focused }) => (
               <View
