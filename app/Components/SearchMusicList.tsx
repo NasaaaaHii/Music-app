@@ -46,6 +46,7 @@ export default function SearchMusicList({ searchContent }: Props) {
     LoadSearch(searchContent as string);
   }, [searchContent]);
 
+  
   return (
     <View>
       {loading && (

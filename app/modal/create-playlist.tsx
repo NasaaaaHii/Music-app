@@ -1,17 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { DeviceEventEmitter, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import playlistBUS from "../../backend/BUS/playlistBUS";
 
-type Props = any;
 
-export default function CreatePlayList({ uid }: Props) {
+export default function CreatePlayList() {
   const [colorBorder, setColorBorder] = useState("border-[#afafaf]");
   const [activeButton, setActiveButton] = useState(false);
   const [colorButton, setColorButton] = useState("bg-[#eaeaea] text-[#959595]");
   const [namePlaylists, setNamePlaylists] = useState("")
+  const { uid } = useLocalSearchParams();
+  
 
   useEffect(() => {
     setColorButton(
@@ -44,11 +45,11 @@ export default function CreatePlayList({ uid }: Props) {
               />
             </Pressable>
           </View>
-          <View className="p-5">
-            <Text className="text-gray-500 text-sm">Tên danh sách phát</Text>
+          <View className="p-5 flex justify-center items-center w-full">
+            <Text className="text-gray-500 text-sm w-[90%] max-w-[900px]">Tên danh sách phát</Text>
             <TextInput
               placeholder="Nhập tên danh sách phát"
-              className={`text-lg border-b-2 ${colorBorder}`}
+              className={`text-lg border-b-2 ${colorBorder} outline-none w-[90%] max-w-[900px]`}
               onFocus={() => {
                 setColorBorder("border-blue-500");
               }}
@@ -63,28 +64,31 @@ export default function CreatePlayList({ uid }: Props) {
             />
           </View>
         </View>
-        <View className="p-5">
-          <Pressable
-            onPress={() => {
-              if (activeButton) {
-                try{
-                    playlistBUS.addPlaylist(uid, namePlaylists)
-                    DeviceEventEmitter.emit("playlistStatus", "success");
-                    router.back();
-                }
-                catch(e){
-                    alert(e)
-                }
+        <View className="p-5 flex justify-center items-center">
+          <View className="w-[90%] max-w-[900px]">
+            <Pressable
+              onPress={() => {
+                if (activeButton) {
+                  try{
+                      playlistBUS.addPlaylist(uid as string, namePlaylists)
+                      DeviceEventEmitter.emit("playlistStatus", "success");
+                      router.back();
+                  }
+                  catch(e){
+                      alert(e)
+                  }
 
-              }
-            }}
-          >
-            <Text
-              className={`${colorButton} w-full text-center p-3 text-lg font-semibold rounded-3xl`}
+                }
+              }}
             >
-              Tạo danh sách phát
-            </Text>
-          </Pressable>
+              <Text
+                className={`${colorButton} w-full text-center p-3 text-lg font-semibold rounded-3xl`}
+              >
+                Tạo danh sách phát
+              </Text>
+            </Pressable>
+
+          </View>
         </View>
       </View>
     </SafeAreaView>

@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { create } from "zustand";
 import playlistBUS from "../../../backend/BUS/playlistBUS";
 import userBUS from "../../../backend/BUS/userBUS";
 import {
@@ -25,6 +26,11 @@ import {
   getError,
   onAuthStateChanged,
 } from "../../../config/firebaseConfig";
+
+export const usePlaylistStore = create((set) => ({
+  shouldReload: false,
+  setReload: (val: boolean) => set({ shouldReload: val }),
+}));
 
 export default function Index() {
   const playlist = [
@@ -82,7 +88,7 @@ export default function Index() {
     const sub = DeviceEventEmitter.addListener("playlistStatus", (status) => {
       if (status === "success")
         (async () => {
-          await loadDB(valid.uid);
+          await loadDB(FIREBASE_AUTH.currentUser!.uid);
         })();
     });
     return () => sub.remove();
@@ -106,7 +112,7 @@ export default function Index() {
           </View>
           <Text className="text-3xl font-bold text-gray-900">Thư viện</Text>
           <Text className="text-gray-600">
-            { DBPlaylist.length } danh sách phát
+            {DBPlaylist.length} danh sách phát
           </Text>
         </View>
 
@@ -180,7 +186,7 @@ export default function Index() {
                 router.push({
                   pathname: "/modal/create-playlist",
                   params: {
-                    uid: DBUser.uid,
+                    uid: valid.uid,
                   },
                 });
               }}
@@ -221,7 +227,7 @@ export default function Index() {
                   }}
                 >
                   <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-                    {item.songs.length>0 ? (
+                    {item.songs.length > 0 ? (
                       <Image
                         source={item.songs[0]}
                         style={{ width: 83, height: 83 }}

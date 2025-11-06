@@ -1,4 +1,4 @@
-import { collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../config/firebaseConfig";
 
 const playlistDAO = {
@@ -19,8 +19,13 @@ const playlistDAO = {
 
   async addPlaylist(userId: string, name: string) {
     try {
-
+      const ref = collection(FIRESTORE_DB, "users", userId, "playlists")
+      await addDoc(ref, {
+        name: name,
+        songs: []
+      })
     } catch (e) {
+      console.log("PLAYLISTDAO - ERROR")
       throw e;
     }
   },
