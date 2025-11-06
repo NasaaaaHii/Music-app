@@ -1,62 +1,78 @@
-import { AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Music } from "lucide-react-native";
+import { useEffect, useState } from "react";
 
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { FIREBASE_AUTH, GoogleAuthProvider, signInWithPopup } from "../config/firebaseConfig";
+import { FIREBASE_AUTH, getError, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword } from "../config/firebaseConfig";
 
-// GoogleSignin.configure({
-//   webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-//   iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-// });
+export default function Login() {
+  const [valid, setValid] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { emailSignUp, passwordSignUp } = useLocalSearchParams(); 
 
-const Login = () => {
-  // const redirectUri = 'exp://127.0.0.1:8081';
-
-  // const [useInfo, setUserInfo] = useState(null);
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
-  //   iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-  //   webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-  // });
-
-  // useEffect(() => {
-  //   if (response?.type === "success") {
-  //     const { authentication } = response;
-  //     console.log("Access Token:", authentication?.accessToken);
-  //   }
-  // }, [response]);
-
-
-  async function signIn() {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(FIREBASE_AUTH, provider);
-      console.log("User info:", result.user);
-    } catch (e) {
-      console.log(e);
+  async function init() {
+    try{
+      setLoading(true)
+      const f = await onAuthStateChanged(FIREBASE_AUTH, (user) => {
+        if (user && user.emailVerified){
+          setValid(true)
+        }
+        setLoading(false)
+      });
+      return f
     }
-
+    catch(e: any){
+      alert(getError(e.code))
+    }
   }
 
-  // const [user, setUser] = useState();
+  useEffect(() => {
+    if(emailSignUp) setEmail(String(emailSignUp))
+    if(passwordSignUp) setPassword(String(passwordSignUp))
+    init()
+  }, []);
 
-  // function handleAuthStateChanged(user: any) {
-  //   setUser(user);
-  // }
+  async function signInFunction(email: string, password: string) {
+    try{
+      await signInWithEmailAndPassword(FIREBASE_AUTH, email, password)
+      await onAuthStateChanged(FIREBASE_AUTH, (user) => {
+        if (user){
+          if(!user.emailVerified){
+            alert("Email chưa được xác minh!")
+          }
+          else setValid(true)
+        }
+      });
+    }
+    catch(e: any){
+      alert(getError(e.code))
+    }
+  }
 
-  // useEffect(() => {
-  //   const subscriber = onAuthStateChanged(auth, handleAuthStateChanged);
-  //   return subscriber;
-  // }, []);
+  async function resetPasswordFunction(email: string) {
+    try{
+      await sendPasswordResetEmail(FIREBASE_AUTH, email)
+      alert("Đã gửi email đặt lại mật khẩu")
+    }
+    catch(e: any){
+      alert(getError(e.code))
+    }
+  }
+
+
+  if(loading) return <View className="flex-1 bg-purple-900 justify-center items-center"><ActivityIndicator size={"large"} color="white" /></View>
+  if(valid) return <Redirect href="/(tabs)/home" />;
+
 
   return (
     <SafeAreaView className="bg-purple-900">
       <View className="w-screen h-screen">
         <View className="w-full h-full flex-col justify-between items-center p-10">
+          {/* Section 1 -- hidden */}
           <View className="w-full flex flex-row justify-between items-center">
             <Pressable
               onPress={() => {
@@ -66,65 +82,93 @@ const Login = () => {
             >
               <ArrowLeft size={30} color={"#ffffff"} />
             </Pressable>
-            <Text className="text-xl font-semibold text-white">Đăng nhập</Text>
             <View className="w-fit">
               <ArrowLeft size={30} color={"rgba(255,255,255,0)"} />
             </View>
           </View>
-          <View className="w-full flex-col justify-center items-center">
-            <View className="w-fit p-5 bg-[rgba(255,255,255,0.15)] rounded-full mt-3">
-              <Music size={40} color={"#fff"} />
-            </View>
-            <Text className="text-white font-normal text-3xl mt-1">
-              Music App
-            </Text>
-            <Text className="text-white font-light text-base mt-2">
-              Khám phá thế giới âm nhạc
-            </Text>
-          </View>
-          <View className="flex flex-col w-full justify-center items-center gap-3">
-            <View className="flex-row w-full justify-center items-center gap-5">
-              <View className="flex-1 bg-white h-1 rounded-full">
-                <Text></Text>
-              </View>
-              <View className="flex justify-center items-center">
-                <Text className="text-base text-white">Đăng nhập bằng</Text>
-              </View>
-              <View className="flex-1 bg-white h-1 rounded-full">
-                <Text></Text>
-              </View>
-            </View>
-            <Pressable
-              onPress={() => {
-                // promptAsync({
-                //   // @ts-ignore
-                //   useProxy: true,
-                //   showInRecents: true,
-                // });
 
-                // console.log(auth);
-                signIn();
-              }}
-              className="bg-white w-[80%] flex flex-row gap-5 justify-center items-center rounded-full py-3 hover:bg-[#f0e5e5] active:bg-[#e5d6d6]"
-            >
-              <AntDesign name="google" size={24} color="black" />
-              <Text className="text-base font-semibold">Google</Text>
-            </Pressable>
-            <View className="flex flex-row mt-3">
-              <Text className="text-white">Bạn chưa có tài khoản? </Text>
+          <View className="w-full flex-col justify-center items-center gap-5">
+            {/* Header */}
+            <View className="w-full flex-col justify-center items-center gap-1">
+              <View className="w-fit p-5 bg-[rgba(255,255,255,0.15)] rounded-full">
+                <Music size={40} color={"#fff"} />
+              </View>
+              <Text className="text-white font-normal text-3xl mt-1">
+                Đăng nhập
+              </Text>
+              <Text className="text-white font-light text-base mt-2">
+                Chào mừng bạn đến với thế giới âm nhạc
+              </Text>
+            </View>
+
+            <View className="flex flex-col w-full justify-center items-center gap-3">
+              <View className="w-[80%] max-w-[500px]">
+                <Text className="w-full text-white text-base text-sm">
+                  Email
+                </Text>
+                <TextInput
+                  className="outline-none border w-full border-red-300 text-white rounded-lg placeholder:text-gray-300 p-3"
+                  placeholder="Nhập email..."
+                  value={email}
+                  onChangeText={(text) => { setEmail(text) }}
+                />
+              </View>
+
+              
+              <View className="w-[80%] max-w-[500px]">
+                <Text className="w-full text-white text-base text-sm">
+                  Mật khẩu
+                </Text>
+                <TextInput
+                  className="outline-none border w-full border-red-300 text-white rounded-lg placeholder:text-gray-300 p-3"
+                  placeholder="Nhập mật khẩu..."
+                  onChangeText={(text) => { setPassword(text) }}
+                  value={password}
+                  secureTextEntry={true}
+                />
+              </View>
+
+              <View className="w-[80%] max-w-[500px]">
+                <View className="w-full flex justify-end items-center flex-row">
+                  <Pressable onPress={() => {
+                    resetPasswordFunction(email)
+                  }}>
+                    <Text className="text-blue-200">Quên mật khẩu?</Text>
+                  </Pressable>
+                </View>
+              </View>
+
               <Pressable
-                onPress={() => {
-                  router.push("/signup");
-                }}
+                onPress={() => { signInFunction(email, password) }}
+                className="bg-white w-[80%] max-w-[500px] flex flex-row gap-5 justify-center items-center rounded-full py-3 hover:bg-[#f0e5e5] active:bg-[#e5d6d6]"
               >
-                <Text className="text-blue-300 font-semibold">Đăng ký</Text>
+                <Text className="text-base font-semibold">Đăng nhập</Text>
               </Pressable>
+
+              <View className="flex flex-row mt-3">
+                <Text className="text-white">Bạn chưa có tài khoản? </Text>
+                <Pressable
+                  onPress={() => {
+                    router.push("/signup");
+                  }}
+                >
+                  <Text className="text-blue-300 font-semibold">Đăng ký</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+
+          {/* Section 3 -- hidden */}
+          <View className="w-full flex flex-row justify-between items-center">
+            <View className="w-fit">
+              <ArrowLeft size={30} color={"rgba(255,255,255,0)"} />
+            </View>
+            <View className="w-fit">
+              <ArrowLeft size={30} color={"rgba(255,255,255,0)"} />
             </View>
           </View>
         </View>
       </View>
     </SafeAreaView>
   );
-};
-
-export default Login;
+}

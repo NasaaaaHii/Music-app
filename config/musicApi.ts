@@ -1,0 +1,25 @@
+export async function searchTrackAPI(query: string) {
+  try {
+    const res = await fetch(
+      `https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(query)}&limit=20`
+    );
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    const err = e as Error;
+    console.log(err.message);
+  }
+}
+
+async function getAudiusHost() {
+  const response = await fetch("https://api.audius.co");
+  const hosts = await response.json();
+  const host = hosts.data[Math.floor(Math.random() * hosts.data.length)];
+  return host;
+}
+
+async function getTrackStreamUrl(trackId: string) {
+  const host = await getAudiusHost();
+  const streamUrl = `${host}/v1/tracks/${trackId}/stream?app_name=musicapp`;
+  return streamUrl;
+}
