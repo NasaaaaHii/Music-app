@@ -1,8 +1,15 @@
 import { Redirect, router } from "expo-router";
-import { ArrowDownToLine, Heart, LibraryBig, Music, Plus } from "lucide-react-native";
+import {
+  ArrowDownToLine,
+  Heart,
+  LibraryBig,
+  Music,
+  Plus,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  DeviceEventEmitter,
   FlatList,
   Image,
   Pressable,
@@ -11,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import playlistBUS from "../../../backend/BUS/playlistBUS";
 import userBUS from "../../../backend/BUS/userBUS";
 import {
   FIREBASE_AUTH,
@@ -38,17 +46,18 @@ export default function Index() {
   ];
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [DBUser, setDBUser] = useState<any>(null)
+  const [DBUser, setDBUser] = useState<any>(null);
+  const [DBPlaylist, setDBPlaylist] = useState<any>(null);
 
   async function loadDB(uid: string) {
-    try{
-      const data = await userBUS.getUserById(uid)
-      console.log(data)
-      setDBUser(data)
-    }
-    catch(e){
-      const err = e as Error
-      console.log(err.message)
+    try {
+      const dataUser = await userBUS.getUserById(uid);
+      const dataPlaylist = await playlistBUS.getPlaylist(uid);
+      setDBUser(dataUser);
+      setDBPlaylist(dataPlaylist);
+    } catch (e) {
+      const err = e as Error;
+      console.log(err.message);
     }
   }
 
@@ -57,8 +66,8 @@ export default function Index() {
       setLoadingPage(true);
       const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
         if (user && user.emailVerified) {
-          setValid(user)
-          await loadDB(user?.uid)
+          setValid(user);
+          await loadDB(user?.uid);
         }
         setLoadingPage(false);
       });
@@ -70,6 +79,13 @@ export default function Index() {
 
   useEffect(() => {
     init();
+    const sub = DeviceEventEmitter.addListener("playlistStatus", (status) => {
+      if (status === "success")
+        (async () => {
+          await loadDB(valid.uid);
+        })();
+    });
+    return () => sub.remove();
   }, []);
 
   if (loadingPage)
@@ -90,7 +106,7 @@ export default function Index() {
           </View>
           <Text className="text-3xl font-bold text-gray-900">Thư viện</Text>
           <Text className="text-gray-600">
-            {DBUser.playlists.length} danh sách phát
+            { DBPlaylist.length } danh sách phát
           </Text>
         </View>
 
@@ -121,7 +137,9 @@ export default function Index() {
                     <Text className="text-md font-semibold text-gray-900">
                       Yêu thích
                     </Text>
-                    <Text className="text-sm text-gray-600">{ DBUser.liked.length } bài hát</Text>
+                    <Text className="text-sm text-gray-600">
+                      {DBUser.liked.length} bài hát
+                    </Text>
                   </View>
                 </View>
               </Pressable>
@@ -145,7 +163,7 @@ export default function Index() {
                     <Text className="text-md font-semibold text-gray-900">
                       Đã tải
                     </Text>
-                    <Text className="text-sm text-gray-600">{ 0 } bài hát</Text>
+                    <Text className="text-sm text-gray-600">{0} bài hát</Text>
                   </View>
                 </View>
               </Pressable>
@@ -157,7 +175,16 @@ export default function Index() {
             <Text className="text-xl font-semibold text-gray-900 pl-6">
               Danh sách phát
             </Text>
-            <Pressable onPress={() => router.push("/modal/create-playlist")}>
+            <Pressable
+              onPress={() => {
+                router.push({
+                  pathname: "/modal/create-playlist",
+                  params: {
+                    uid: DBUser.uid,
+                  },
+                });
+              }}
+            >
               <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
                 <View className="p-6 bg-[#f0eff4]">
                   <Plus size={40} color="#737373" />
@@ -170,7 +197,7 @@ export default function Index() {
 
             <FlatList
               scrollEnabled={false}
-              data={playlist}
+              data={DBPlaylist}
               keyExtractor={(item, index) => index.toString()}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{
@@ -186,18 +213,17 @@ export default function Index() {
                       pathname: "/library/playlists",
                       params: {
                         type: "playlists",
-                        firstMusic: item.firstMusic,
-
-                        title: item.title,
-                        count: item.count,
+                        firstMusic: require("../../../assets/images/nhac_1.png"),
+                        title: "Thư viện 1",
+                        count: 3,
                       },
                     });
                   }}
                 >
                   <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-                    {item.firstMusic ? (
+                    {item.songs.length>0 ? (
                       <Image
-                        source={item.firstMusic}
+                        source={item.songs[0]}
                         style={{ width: 83, height: 83 }}
                       />
                     ) : (
@@ -207,10 +233,10 @@ export default function Index() {
                     )}
                     <View>
                       <Text className="text-md font-semibold text-gray-900">
-                        {item.title}
+                        {item.name}
                       </Text>
                       <Text className="text-sm text-gray-600">
-                        {item.count} bài hát
+                        {item.songs.length} bài hát
                       </Text>
                     </View>
                   </View>
