@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import {
   CircleArrowDown,
   CirclePlus,
@@ -8,6 +8,8 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  DeviceEventEmitter,
   FlatList,
   Image,
   ImageProps,
@@ -17,10 +19,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { searchTrackAPI } from "../../../config/musicApi";
 import MusicEqualizer from "../../Components/MusicEqualizer";
 
 import { useAudioPlayer } from "expo-audio";
+import playlistBUS from "../../../backend/BUS/playlistBUS";
+import {
+  FIREBASE_AUTH,
+  getError,
+  onAuthStateChanged,
+} from "../../../config/firebaseConfig";
 
 export default function PlayLists() {
   type Track = {
@@ -36,7 +43,7 @@ export default function PlayLists() {
     };
   };
 
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams<any>();
   const [iconHeader, setIconHeader] = useState<React.ReactNode>(null);
   const [colorPlayer, setColorPlayer] = useState("bg-gray-300");
   const [loading, setLoading] = useState(false);
@@ -89,18 +96,6 @@ export default function PlayLists() {
     }
   }, []);
 
-  async function logData() {
-    try {
-      const data = await searchTrackAPI("Baby");
-      console.log(data);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  useEffect(() => {
-    logData();
-  }, []);
-
   function PlayTrack() {
     // setLoading(true);
     // setTracks([]);
@@ -116,6 +111,57 @@ export default function PlayLists() {
     // console.log(getTrackStreamUrl("66622"))
   }
 
+  const [valid, setValid] = useState<any>(null);
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [DBPlaylist, setDBPlaylist] = useState<any>(null);
+
+  async function loadDB() {
+    try {
+      const uid = FIREBASE_AUTH.currentUser!.uid;
+      const plid = params.idPlaylists;
+      const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
+      setDBPlaylist(data);
+    } catch (e) {
+      const err = e as Error;
+      console.log(err.message);
+    }
+  }
+
+  async function init() {
+    try {
+      setLoadingPage(true);
+      const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+        if (user && user.emailVerified) {
+          setValid(user);
+          await loadDB();
+        }
+        setLoadingPage(false);
+      });
+      return f;
+    } catch (e: any) {
+      alert(getError(e.code));
+    }
+  }
+
+  useEffect(() => {
+    init();
+    const sub = DeviceEventEmitter.addListener("statusSearchMusicList", (status) => {
+      if (status === "success")
+        (async () => {
+          await loadDB();
+          DeviceEventEmitter.emit("statusPlaylists", "success");
+        })();
+    });
+    return () => sub.remove();
+  }, []);
+
+  if (loadingPage)
+    return (
+      <View className="flex-1 bg-purple-900 justify-center items-center">
+        <ActivityIndicator size={"large"} color="white" />
+      </View>
+    );
+  if (!valid) return <Redirect href="/" />;
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -146,10 +192,10 @@ export default function PlayLists() {
           {iconHeader}
           <View>
             <Text className="font-semibold text-xl text-center">
-              {"Yêu thích"}
+              {DBPlaylist.name}
             </Text>
             <Text className="text-gray-500 text-base text-center">
-              {0} bài hát
+              {DBPlaylist.songs.length} bài hát
             </Text>
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">
@@ -157,7 +203,7 @@ export default function PlayLists() {
               className="flex flex-col items-center"
               onPress={() => {
                 // player.seekTo(0);
-                player.pause()
+                player.pause();
               }}
             >
               <CircleArrowDown size={24} strokeWidth={1.5} color={"#000"} />
@@ -178,7 +224,12 @@ export default function PlayLists() {
             <Pressable
               className="flex flex-col items-center"
               onPress={() => {
-                router.push("/library/addMusic");
+                router.push({
+                  pathname: "/library/addMusic",
+                  params: {
+                    idPlaylists: params.idPlaylists,
+                  },
+                });
               }}
             >
               <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />

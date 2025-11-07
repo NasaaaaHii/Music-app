@@ -1,14 +1,46 @@
-import { router } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FIREBASE_AUTH, getError, onAuthStateChanged } from "../../../config/firebaseConfig";
 import FavoriteMusicList from "../../Components/FavoriteMusicList";
 import SearchMusicList from "../../Components/SearchMusicList";
 
 export default function AddMusicPage() {
   const [activePage, setActivePage] = useState("online")
   const [content, setContent] = useState("")
+  const params = useLocalSearchParams<any>();
+  
+  const [valid, setValid] = useState<any>(null);
+  const [loadingPage, setLoadingPage] = useState(true);
+
+  async function init() {
+    try {
+      setLoadingPage(true);
+      const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+        if (user && user.emailVerified) {
+          setValid(user);
+        }
+        setLoadingPage(false);
+      });
+      return f;
+    } catch (e: any) {
+      alert(getError(e.code));
+    }
+  }
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  if (loadingPage)
+    return (
+      <View className="flex-1 bg-purple-900 justify-center items-center">
+        <ActivityIndicator size={"large"} color="white" />
+      </View>
+    );
+  if (!valid) return <Redirect href="/" />;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -49,7 +81,7 @@ export default function AddMusicPage() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex mt-2 mb-80">
-          {activePage==="online" && <SearchMusicList searchContent={content}/>}
+          {activePage==="online" && <SearchMusicList searchContent={content} uid={FIREBASE_AUTH.currentUser?.uid!} plid={params.idPlaylists}/>}
           {activePage==="loved" && <FavoriteMusicList />}
         </View>
       </ScrollView>

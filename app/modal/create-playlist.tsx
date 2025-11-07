@@ -1,24 +1,60 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { DeviceEventEmitter, Pressable, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  DeviceEventEmitter,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import playlistBUS from "../../backend/BUS/playlistBUS";
-import { FIREBASE_AUTH } from "../../config/firebaseConfig";
-
+import {
+  FIREBASE_AUTH,
+  getError,
+  onAuthStateChanged,
+} from "../../config/firebaseConfig";
 
 export default function CreatePlayList() {
   const [colorBorder, setColorBorder] = useState("border-[#afafaf]");
   const [activeButton, setActiveButton] = useState(false);
   const [colorButton, setColorButton] = useState("bg-[#eaeaea] text-[#959595]");
-  const [namePlaylists, setNamePlaylists] = useState("")
-  const uid = FIREBASE_AUTH.currentUser?.uid
+  const [namePlaylists, setNamePlaylists] = useState("");
+  const [valid, setValid] = useState<any>(null);
+  const [loadingPage, setLoadingPage] = useState(true);
 
   useEffect(() => {
     setColorButton(
       activeButton ? "bg-blue-500 text-white" : "bg-[#eaeaea] text-[#959595]"
     );
   }, [activeButton]);
+
+  async function init() {
+    try {
+      setLoadingPage(true);
+      const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+        if (user && user.emailVerified) setValid(user);
+        setLoadingPage(false);
+      });
+      return f;
+    } catch (e: any) {
+      alert(getError(e.code));
+    }
+  }
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  if (loadingPage)
+    return (
+      <View className="flex-1 bg-purple-900 justify-center items-center">
+        <ActivityIndicator size={"large"} color="white" />
+      </View>
+    );
+  if (!valid) return <Redirect href="/" />;
 
   return (
     <SafeAreaView className="flex bg-[#f4f3f8]">
@@ -46,7 +82,9 @@ export default function CreatePlayList() {
             </Pressable>
           </View>
           <View className="p-5 flex justify-center items-center w-full">
-            <Text className="text-gray-500 text-sm w-[90%] max-w-[900px]">Tên danh sách phát</Text>
+            <Text className="text-gray-500 text-sm w-[90%] max-w-[900px]">
+              Tên danh sách phát
+            </Text>
             <TextInput
               placeholder="Nhập tên danh sách phát"
               className={`text-lg border-b-2 ${colorBorder} outline-none w-[90%] max-w-[900px]`}
@@ -57,7 +95,7 @@ export default function CreatePlayList() {
                 setColorBorder("border-[#afafaf]");
               }}
               onChangeText={(text) => {
-                setNamePlaylists(text)
+                setNamePlaylists(text);
                 setActiveButton(text.length > 0);
               }}
               value={namePlaylists}
@@ -69,15 +107,13 @@ export default function CreatePlayList() {
             <Pressable
               onPress={() => {
                 if (activeButton) {
-                  try{
-                      playlistBUS.addPlaylist(uid as string, namePlaylists)
-                      DeviceEventEmitter.emit("playlistStatus", "success");
-                      router.back();
+                  try {
+                    playlistBUS.addPlaylist(FIREBASE_AUTH.currentUser!.uid as string, namePlaylists);
+                    DeviceEventEmitter.emit("playlistStatus", "success");
+                    router.back();
+                  } catch (e) {
+                    alert(e);
                   }
-                  catch(e){
-                      alert(e)
-                  }
-
                 }
               }}
             >
@@ -87,7 +123,6 @@ export default function CreatePlayList() {
                 Tạo danh sách phát
               </Text>
             </Pressable>
-
           </View>
         </View>
       </View>

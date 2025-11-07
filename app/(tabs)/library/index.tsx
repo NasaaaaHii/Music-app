@@ -27,27 +27,10 @@ import {
 } from "../../../config/firebaseConfig";
 
 export default function Index() {
-  const playlist = [
-    {
-      firstMusic: require("../../../assets/images/nhac_1.png"),
-      title: "Thư viện 1",
-      count: 3,
-    },
-    {
-      firstMusic: require("../../../assets/images/nhac_2.png"),
-      title: "Thư viện 2",
-      count: 6,
-    },
-    {
-      firstMusic: null,
-      title: "Thư viện mới",
-      count: 0,
-    },
-  ];
-  const [valid, setValid] = useState<any>(null);
-  const [loadingPage, setLoadingPage] = useState(true);
   const [DBUser, setDBUser] = useState<any>(null);
   const [DBPlaylist, setDBPlaylist] = useState<any>(null);
+  const [valid, setValid] = useState<any>(null);
+  const [loadingPage, setLoadingPage] = useState(true);
 
   async function loadDB(uid: string) {
     try {
@@ -85,7 +68,16 @@ export default function Index() {
           await loadDB(FIREBASE_AUTH.currentUser!.uid);
         })();
     });
-    return () => sub.remove();
+    const sub2 = DeviceEventEmitter.addListener("statusPlaylists", (status) => {
+      if (status === "success")
+        (async () => {
+          await loadDB(FIREBASE_AUTH.currentUser!.uid);
+        })();
+    });
+    return () => {
+      sub.remove();
+      sub2.remove();
+    }
   }, []);
 
   if (loadingPage)
@@ -178,10 +170,7 @@ export default function Index() {
             <Pressable
               onPress={() => {
                 router.push({
-                  pathname: "/modal/create-playlist",
-                  params: {
-                    uid: valid.uid,
-                  },
+                  pathname: "/modal/create-playlist"
                 });
               }}
             >
@@ -213,15 +202,13 @@ export default function Index() {
                       pathname: "/library/playlists",
                       params: {
                         type: "playlists",
-                        firstMusic: require("../../../assets/images/nhac_1.png"),
-                        title: "Thư viện 1",
-                        count: 3,
+                        idPlaylists: item.id,
                       },
                     });
                   }}
                 >
                   <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-                    {item.songs.length > 0 ? (
+                    {item.songs.length < 0 ? (
                       <Image
                         source={item.songs[0]}
                         style={{ width: 83, height: 83 }}

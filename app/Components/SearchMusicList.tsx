@@ -1,54 +1,98 @@
-import { CirclePlus } from "lucide-react-native";
+import { CheckCheck, CirclePlus } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { FlatList, Image, Pressable, Text, View } from "react-native";
-import { getTrackStreamUrl, searchTrackAPI } from "../../config/musicApi";
+import { DeviceEventEmitter, FlatList, Image, Pressable, Text, View } from "react-native";
+import playlistBUS from "../../backend/BUS/playlistBUS";
+import { searchTrackAPI } from "../../config/musicApi";
+
+type Props = {
+  searchContent: string;
+  uid: string;
+  plid: string;
+};
 
 type Track = {
   id: string;
   track_id: number;
   title: string;
-  user?: { name: string };
-  artists?: { name: string }[];
-
-  access: {
-    download: true;
-    stream: true;
-  }[];
-
-  artwork: {
-    "150x150": string | null;
-    "480x480": string | null;
-    "1000x1000": string | null;
-    images: {
-      url: string;
-    }[];
+  artists: string[];
+  is_inPlayList: boolean;
+  access?: {
+    download?: boolean;
+    stream?: boolean;
   };
+  image: string;
 };
 
-type Props = {
-  searchContent: string;
-};
-
-export default function SearchMusicList({ searchContent }: Props) {
+export default function SearchMusicList({ searchContent, uid, plid }: Props) {
   const [loading, setLoading] = useState(false);
   const [tracks, setTracks] = useState<Track[]>();
+  const [DBPlaylist, setDBPlaylist] = useState<any>();
 
-  async function LoadSearch(title: string) {
+  async function LoadSearch(DB: any) {
     setLoading(true);
     setTracks([]);
 
-    const data = await searchTrackAPI(title);
-    console.log(data)
-    console.log(getTrackStreamUrl(855148))
-    setTracks(data.data);
+    const res = await searchTrackAPI(searchContent);
+    const data = res.data;
+
+    const updatedData = data.map((item: any) => {
+      const artistList =
+        item.artists?.length > 0
+          ? item.artists.map((a: any) => a.name)
+          : item.user?.name
+            ? [item.user.name]
+            : [];
+
+      const artworkUrl =
+        item.artwork?.["1000x1000"] ||
+        item.artwork?.["480x480"] ||
+        item.artwork?.["150x150"] ||
+        "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+
+      return {
+        id: item.id,
+        track_id: item.track_id,
+        title: item.title,
+        artists: artistList,
+        is_inPlayList: DB.songs.includes(item.track_id),
+        access: {
+          download: item.access?.download ?? true,
+          stream: item.access?.stream ?? true,
+        },
+        image: artworkUrl,
+      };
+    });
+
+    console.log(updatedData);
+
+    setTracks(updatedData);
     setLoading(false);
   }
 
+  async function loadDB() {
+    try {
+      const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
+      setDBPlaylist(data);
+      await LoadSearch(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function loadDBNoLoad() {
+    const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
+    setDBPlaylist(data);
+  }
+
   useEffect(() => {
-    LoadSearch(searchContent as string);
+    loadDB();
+  }, []);
+
+  useEffect(() => {
+    if (!DBPlaylist) return;
+    LoadSearch(DBPlaylist);
   }, [searchContent]);
 
-  
   return (
     <View>
       {loading && (
@@ -57,21 +101,17 @@ export default function SearchMusicList({ searchContent }: Props) {
       <FlatList
         scrollEnabled={false}
         data={tracks}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id}
         contentContainerStyle={{
           gap: 10,
           paddingHorizontal: 20,
           paddingVertical: 0,
         }}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <View className="flex flex-row items-center">
             <Image
               source={{
-                uri:
-                  item.artwork?.["1000x1000"] ||
-                  item.artwork?.["480x480"] ||
-                  item.artwork?.["150x150"] ||
-                  "https://cdn-icons-png.flaticon.com/512/727/727245.png",
+                uri: item.image,
               }}
               style={{ width: 70, height: 70, borderRadius: 10 }}
             />
@@ -79,18 +119,51 @@ export default function SearchMusicList({ searchContent }: Props) {
               <Text className="font-semibold text-base">{item.title}</Text>
               <Text className="text-sm text-gray-500">
                 {item.artists && item.artists.length > 0
-                  ? item.artists.map((a) => a.name).join(", ")
-                  : item.user?.name || "Unknown Artist"}
+                  ? item.artists.join(", ")
+                  : "Unknown Artist"}
               </Text>
             </View>
             <View className="flex flex-row items-center gap-1">
-              <Pressable
-                onPress={() => {
-                  alert(item.id);
-                }}
-              >
-                <CirclePlus width={22} strokeWidth={1.5} />
-              </Pressable>
+              {!item.is_inPlayList && (
+                <Pressable
+                  onPress={() => {
+                    DeviceEventEmitter.emit("statusSearchMusicList", "success");
+                    setTracks((prevTracks) => {
+                      if (!prevTracks) return prevTracks;
+                      const newTracks = [...prevTracks];
+                      newTracks[index] = {
+                        ...newTracks[index],
+                        is_inPlayList: true,
+                      };
+                      return newTracks;
+                    });
+                    playlistBUS.addSongInPlaylist(uid, plid, item.track_id);
+                    loadDBNoLoad();
+                  }}
+                >
+                  <CirclePlus width={22} strokeWidth={1.5} />
+                </Pressable>
+              )}
+              {item.is_inPlayList && (
+                <Pressable
+                  onPress={() => {
+                    DeviceEventEmitter.emit("statusSearchMusicList", "success");
+                    setTracks((prevTracks) => {
+                      if (!prevTracks) return prevTracks;
+                      const newTracks = [...prevTracks];
+                      newTracks[index] = {
+                        ...newTracks[index],
+                        is_inPlayList: false,
+                      };
+                      return newTracks;
+                    });
+                    playlistBUS.deleteSongInPlaylist(uid, plid, item.track_id)
+                    loadDBNoLoad();
+                  }}
+                >
+                  <CheckCheck width={22} strokeWidth={1.5} />
+                </Pressable>
+              )}
             </View>
           </View>
         )}
