@@ -5,6 +5,7 @@ import {
   CirclePlus,
   EllipsisVertical,
   Heart,
+  Music,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -12,7 +13,6 @@ import {
   DeviceEventEmitter,
   FlatList,
   Image,
-  ImageProps,
   Pressable,
   ScrollView,
   Text,
@@ -28,6 +28,7 @@ import {
   getError,
   onAuthStateChanged,
 } from "../../../config/firebaseConfig";
+import { getTrack, getTrackStreamUrl } from "../../../config/musicApi";
 
 export default function PlayLists() {
   type Track = {
@@ -60,40 +61,26 @@ export default function PlayLists() {
   }, [params.count]);
 
   useEffect(() => {
-    if (params.type === "category") {
-      setIconHeader(
-        <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl">
-          <Feather
-            name={"heart"}
-            size={100}
-            color={"#d0cfd5"}
-            className="aspect-square p-28"
-          />
-        </View>
-      );
-    } else if (params.type === "playlists") {
-      if (params.firstMusic == null) {
-        setIconHeader(
-          <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl">
-            <Feather
-              name="music"
-              size={100}
-              color={"#d0cfd5"}
-              className="aspect-square p-28"
-            />
-          </View>
-        );
-      } else {
-        setIconHeader(
-          <View className="flex px-20 flex-row justify-center items-center">
-            <Image
-              source={params.firstMusic as ImageProps}
-              className="aspect-square w-full rounded-xl"
-            />
-          </View>
-        );
-      }
-    }
+    // if (params.type === "category") {
+    //   setIconHeader(
+    //     <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl">
+    //       <Feather
+    //         name={"heart"}
+    //         size={100}
+    //         color={"#d0cfd5"}
+    //         className="aspect-square p-28"
+    //       />
+    //     </View>
+    //   );
+    // } else if (params.type === "playlists") {
+    //   if (params.firstMusic == null) {
+    //     setIconHeader(
+    //     );
+    //   } else {
+    //     setIconHeader(
+    //     );
+    //   }
+    // }
   }, []);
 
   function PlayTrack() {
@@ -114,13 +101,47 @@ export default function PlayLists() {
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
   const [DBPlaylist, setDBPlaylist] = useState<any>(null);
+  const [DBSongList, setDBSongList] = useState<any>(null);
 
   async function loadDB() {
     try {
       const uid = FIREBASE_AUTH.currentUser!.uid;
       const plid = params.idPlaylists;
       const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
+
+      const newData = await Promise.all(
+        data.songs.map(async (id) => {
+          const item = await getTrack(id);
+          const url = await getTrackStreamUrl(id);
+
+          const artistList =
+            item.artists?.length > 0
+              ? item.artists.map((a: any) => a.name)
+              : item.user?.name
+                ? [item.user.name]
+                : [];
+
+          const artworkUrl =
+            item.artwork?.["1000x1000"] ||
+            item.artwork?.["480x480"] ||
+            item.artwork?.["150x150"] ||
+            "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+
+          return {
+            id: id,
+            title: item.title,
+            artists: artistList,
+            access: {
+              download: item.access?.download ?? true,
+              stream: item.access?.stream ?? true,
+            },
+            image: artworkUrl,
+            url: url,
+          };
+        })
+      );
       setDBPlaylist(data);
+      setDBSongList(newData);
     } catch (e) {
       const err = e as Error;
       console.log(err.message);
@@ -145,13 +166,16 @@ export default function PlayLists() {
 
   useEffect(() => {
     init();
-    const sub = DeviceEventEmitter.addListener("statusSearchMusicList", (status) => {
-      if (status === "success")
-        (async () => {
-          await loadDB();
-          DeviceEventEmitter.emit("statusPlaylists", "success");
-        })();
-    });
+    const sub = DeviceEventEmitter.addListener(
+      "statusSearchMusicList",
+      (status) => {
+        if (status === "success")
+          (async () => {
+            await loadDB();
+            DeviceEventEmitter.emit("statusPlaylists", "success");
+          })();
+      }
+    );
     return () => sub.remove();
   }, []);
 
@@ -189,7 +213,22 @@ export default function PlayLists() {
               </Pressable>
             </View>
           </View>
-          {iconHeader}
+
+          {DBSongList.length > 0 && (
+            <View className="flex px-20 flex-row justify-center items-center">
+              <Image
+                source={{ uri: DBSongList[0].image }}
+                resizeMode="cover"
+                style={{ width: 250, height: 250, borderRadius: 10 }}
+              />
+            </View>
+          )}
+          {DBSongList.length === 0 && (
+            <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl p-20">
+              <Music size={100} color={"#d0cfd5"} />
+            </View>
+          )}
+
           <View>
             <Text className="font-semibold text-xl text-center">
               {DBPlaylist.name}
@@ -246,7 +285,7 @@ export default function PlayLists() {
             )}
             <FlatList
               scrollEnabled={false}
-              data={tracks}
+              data={DBSongList}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{
                 paddingHorizontal: 20,
@@ -263,8 +302,9 @@ export default function PlayLists() {
                     className={`${posMusicPlaying === item.id ? "opacity-50" : "opacity-100"}`}
                   >
                     <Image
-                      source={{ uri: item.album.images[0].url }}
+                      source={{ uri: item.image }}
                       style={{ width: 70, height: 70, borderRadius: 10 }}
+                      resizeMode="cover"
                     />
                     {posMusicPlaying === item.id && (
                       <View className="absolute top-0 bottom-0 right-0 left-0 felx justify-center items-center">
@@ -275,9 +315,7 @@ export default function PlayLists() {
                   <View className="flex-1 mx-3">
                     <Text className="font-semibold text-base">{item.name}</Text>
                     <Text className="text-sm text-gray-500">
-                      {item.album.artists
-                        .map((artist) => artist.name)
-                        .join(", ")}
+                      {item.artists.join(", ")}
                     </Text>
                   </View>
                   <View className="flex flex-row items-center gap-1">

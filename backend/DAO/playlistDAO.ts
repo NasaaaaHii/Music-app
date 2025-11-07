@@ -35,11 +35,11 @@ const playlistDAO = {
     }
   },
 
-  async getPlaylistByIdPL(uid: string, plid: string) {
+  async getPlaylistByIdPL(uid: string, plid: string): Promise<PlayList> {
     try {
       const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid);
       const response = await getDoc(ref);
-      return response.data();
+      return response.data() as PlayList;
     } catch (error) {
       throw error;
     }
