@@ -1,11 +1,12 @@
 import { Feather } from "@expo/vector-icons";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import {
-  CircleArrowDown,
+  CircleArrowRight,
   CirclePlus,
   EllipsisVertical,
   Heart,
   Music,
+  Pause
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -45,20 +46,16 @@ export default function PlayLists() {
   };
 
   const params = useLocalSearchParams<any>();
-  const [iconHeader, setIconHeader] = useState<React.ReactNode>(null);
-  const [colorPlayer, setColorPlayer] = useState("bg-gray-300");
   const [loading, setLoading] = useState(false);
-  const [tracks, setTracks] = useState<Track[]>();
-  const [posMusicPlaying, setPosMusicPlaying] = useState("");
-  const player = useAudioPlayer(
-    "https://discoveryprovider.audius.co/v1/tracks/855148/stream?app_name=musicapp"
-  );
+  const [posMusicPlaying, setPosMusicPlaying] = useState<any>(null);
+  const [urlMusicPlaying, setUrlMusicPlaying] = useState<any>(null);
 
-  useEffect(() => {
-    params.count == "0"
-      ? setColorPlayer("bg-gray-300")
-      : setColorPlayer("bg-[#8546ec]");
-  }, [params.count]);
+  const [isPlaying, setIsPlaying] = useState(0)
+
+  const player = useAudioPlayer(
+    urlMusicPlaying
+    // "https://discoveryprovider.audius.co/v1/tracks/855148/stream?app_name=musicapp"
+  );
 
   useEffect(() => {
     // if (params.type === "category") {
@@ -82,21 +79,6 @@ export default function PlayLists() {
     //   }
     // }
   }, []);
-
-  function PlayTrack() {
-    // setLoading(true);
-    // setTracks([]);
-
-    // const data = await SearchAPITracks(title, limit);
-    // setTracks(data);
-    // console.log(data);
-
-    // setLoading(false);
-    // player.play();
-
-    player.play();
-    // console.log(getTrackStreamUrl("66622"))
-  }
 
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -242,22 +224,34 @@ export default function PlayLists() {
               className="flex flex-col items-center"
               onPress={() => {
                 // player.seekTo(0);
-                player.pause();
+                // player.pause();
+                const pos = (posMusicPlaying + 1) % DBSongList.length
+                setPosMusicPlaying(pos)
+                setUrlMusicPlaying(DBSongList[pos].url)
               }}
             >
-              <CircleArrowDown size={24} strokeWidth={1.5} color={"#000"} />
-              <Text className="text-sm">Tải xuống</Text>
+              <CircleArrowRight size={24} strokeWidth={1.5} color={"#000"} />
+              <Text className="text-sm">Bài kế</Text>
             </Pressable>
             <Pressable
               onPress={() => {
-                if (params.count !== "0") {
-                  PlayTrack();
+                if (DBSongList.length > 0) {
+                  if(posMusicPlaying === null){
+                    setPosMusicPlaying(0)
+                    setUrlMusicPlaying(DBSongList[0].url)
+                    player.play()
+                  }
+
+                  const x = 1 - isPlaying
+                  setIsPlaying(x)
+                  if(x === 0) player.pause()
+                  else player.play()
                 }
               }}
-              className={`${colorPlayer} px-7 py-3 rounded-full`}
+              className={`${DBSongList.length > 0 ? 'bg-[#8546ec]' : 'bg-gray-300' } px-7 py-3 rounded-full`}
             >
               <Text className="text-white text-lg font-semibold">
-                Phát nhạc
+                {isPlaying === 0 ? "Phát nhạc" : "Tạm dừng"} 
               </Text>
             </Pressable>
             <Pressable
@@ -291,29 +285,39 @@ export default function PlayLists() {
                 paddingHorizontal: 20,
                 paddingVertical: 0,
               }}
-              renderItem={({ item }) => (
+              renderItem={({ item, index }) => (
                 <View
-                  className={`flex flex-row items-center p-3 ${posMusicPlaying === item.id ? "bg-gray-100" : ""} `}
+                  className={`flex flex-row items-center p-3 ${urlMusicPlaying === item.url ? "bg-gray-100" : ""} `}
                 >
                   <Pressable
                     onPress={() => {
-                      setPosMusicPlaying(item.id);
+                      if(index===posMusicPlaying){
+                        const x = 1 - isPlaying
+                        setIsPlaying(x)
+                        if(x === 0) player.pause()
+                        else player.play()
+                      }
+                      else{
+                        setUrlMusicPlaying(item.url)
+                        setPosMusicPlaying(index)
+                        player.play()
+                      }
                     }}
-                    className={`${posMusicPlaying === item.id ? "opacity-50" : "opacity-100"}`}
+                    className={`${urlMusicPlaying === item.url ? "opacity-50" : "opacity-100"}`}
                   >
                     <Image
                       source={{ uri: item.image }}
                       style={{ width: 70, height: 70, borderRadius: 10 }}
                       resizeMode="cover"
                     />
-                    {posMusicPlaying === item.id && (
+                    {urlMusicPlaying === item.url && (
                       <View className="absolute top-0 bottom-0 right-0 left-0 felx justify-center items-center">
-                        <MusicEqualizer />
+                        {isPlaying === 0 ? <Pause size={40} />: <MusicEqualizer /> }
                       </View>
                     )}
                   </Pressable>
                   <View className="flex-1 mx-3">
-                    <Text className="font-semibold text-base">{item.name}</Text>
+                    <Text className="font-semibold text-base">{item.title}</Text>
                     <Text className="text-sm text-gray-500">
                       {item.artists.join(", ")}
                     </Text>
