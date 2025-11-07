@@ -49,13 +49,12 @@ export default function PlayLists() {
   const [loading, setLoading] = useState(false);
   const [posMusicPlaying, setPosMusicPlaying] = useState<any>(null);
   const [urlMusicPlaying, setUrlMusicPlaying] = useState<any>(null);
+  const [currentUrl, setCurrUrl] = useState<string | null>(null);
+
 
   const [isPlaying, setIsPlaying] = useState(0)
 
-  const player = useAudioPlayer(
-    urlMusicPlaying
-    // "https://discoveryprovider.audius.co/v1/tracks/855148/stream?app_name=musicapp"
-  );
+  const player = useAudioPlayer();
 
   useEffect(() => {
     // if (params.type === "category") {
@@ -79,6 +78,20 @@ export default function PlayLists() {
     //   }
     // }
   }, []);
+
+  useEffect(() => {
+    if(!urlMusicPlaying) return
+
+    if(currentUrl !== urlMusicPlaying){
+      player.replace(urlMusicPlaying)
+      setCurrUrl(urlMusicPlaying)
+    }
+
+    if(isPlaying === 0) player.pause()
+    else player.play()
+  }, [urlMusicPlaying, isPlaying])
+
+  
 
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -223,11 +236,17 @@ export default function PlayLists() {
             <Pressable
               className="flex flex-col items-center"
               onPress={() => {
-                // player.seekTo(0);
-                // player.pause();
+                if(posMusicPlaying === null){
+                  setPosMusicPlaying(0)
+                  setUrlMusicPlaying(DBSongList[0].url)
+                  setIsPlaying(1 - isPlaying)
+                  return
+                }
+
                 const pos = (posMusicPlaying + 1) % DBSongList.length
                 setPosMusicPlaying(pos)
                 setUrlMusicPlaying(DBSongList[pos].url)
+                setIsPlaying(1)
               }}
             >
               <CircleArrowRight size={24} strokeWidth={1.5} color={"#000"} />
@@ -239,13 +258,8 @@ export default function PlayLists() {
                   if(posMusicPlaying === null){
                     setPosMusicPlaying(0)
                     setUrlMusicPlaying(DBSongList[0].url)
-                    player.play()
                   }
-
-                  const x = 1 - isPlaying
-                  setIsPlaying(x)
-                  if(x === 0) player.pause()
-                  else player.play()
+                  setIsPlaying(1 - isPlaying)
                 }
               }}
               className={`${DBSongList.length > 0 ? 'bg-[#8546ec]' : 'bg-gray-300' } px-7 py-3 rounded-full`}
@@ -292,15 +306,12 @@ export default function PlayLists() {
                   <Pressable
                     onPress={() => {
                       if(index===posMusicPlaying){
-                        const x = 1 - isPlaying
-                        setIsPlaying(x)
-                        if(x === 0) player.pause()
-                        else player.play()
+                        setIsPlaying(1 - isPlaying)
                       }
                       else{
                         setUrlMusicPlaying(item.url)
                         setPosMusicPlaying(index)
-                        player.play()
+                        setIsPlaying(1)
                       }
                     }}
                     className={`${urlMusicPlaying === item.url ? "opacity-50" : "opacity-100"}`}
