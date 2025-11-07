@@ -18,7 +18,7 @@ async function getAudiusHost() {
   return host;
 }
 
-async function getTrackStreamUrl(trackId: string) {
+export async function getTrackStreamUrl(trackId: number) {
   const host = await getAudiusHost();
   const streamUrl = `${host}/v1/tracks/${trackId}/stream?app_name=musicapp`;
   return streamUrl;

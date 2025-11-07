@@ -16,6 +16,14 @@ const userBUS = {
       throw error;
     }
   },
+
+  async deleteUser(uid: string){
+    try {
+      await userDAO.deleteUser(uid)
+    } catch (error) {
+      throw error
+    }
+  }
 };
 
 export default userBUS

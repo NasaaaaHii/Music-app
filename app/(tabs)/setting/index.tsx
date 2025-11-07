@@ -1,3 +1,5 @@
+import { Redirect } from "expo-router";
+import { deleteUser } from "firebase/auth";
 import {
   Bell,
   BellRing,
@@ -7,13 +9,65 @@ import {
   Trash,
   User,
 } from "lucide-react-native";
-import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import userBUS from "../../../backend/BUS/userBUS";
+import { FIREBASE_AUTH, getError, onAuthStateChanged, signOut } from "../../../config/firebaseConfig";
 import { t } from "../../theme";
 type Mode = "Light" | "Dark";
 export default function Setting() {
   const [isDarkMode, setIsDarkMode] = useState<Mode>("Dark");
   const [isNotification, setIsNotification] = useState(false);
+  const [valid, setValid] = useState<any>(null);
+  const [loadingPage, setLoadingPage] = useState(true);
+
+  async function signOutFunction() {
+    try{
+      await signOut(FIREBASE_AUTH)
+      setValid(null)
+    }
+    catch(e){
+      console.log(e)
+    }
+  }
+
+  async function deleteFunction() {
+    try {
+      await userBUS.deleteUser(FIREBASE_AUTH.currentUser!.uid!)
+      await deleteUser(FIREBASE_AUTH.currentUser!)
+      setValid(null)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async function init() {
+    try {
+      setLoadingPage(true);
+      const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+        if (user && user.emailVerified) {
+          setValid(user);
+        }
+        setLoadingPage(false);
+      });
+      return f;
+    } catch (e: any) {
+      alert(getError(e.code));
+    }
+  }
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  if (loadingPage)
+    return (
+      <View className="flex-1 bg-purple-900 justify-center items-center">
+        <ActivityIndicator size={"large"} color="white" />
+      </View>
+    );
+  if (!valid) return <Redirect href="/" />;
+
   return (
     <ScrollView className="flex-1" style={{ backgroundColor: t.tabBarBg }}>
       <View className="px-5 pt-16 pb-6 mb-24">
@@ -58,7 +112,9 @@ export default function Setting() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity className="px-4 py-2 rounded-lg bg-red-500">
+            <TouchableOpacity className="px-4 py-2 rounded-lg bg-red-500" onPress={()=>{
+              signOutFunction()
+            }}>
               <Text className="text-md font-bold" style={{ color: t.text }}>
                 Đăng xuất
               </Text>
@@ -164,15 +220,17 @@ export default function Setting() {
             </View>
           </View>
           <View className="flex flex-col gap-4 pt-8">
-            <View
-              className="flex flex-row justify-center items-center gap-4 rounded-2xl p-3 bg-red-700"
-              // style={{ backgroundColor: t.primary }}
-            >
-              <Trash size={24} color={t.text} strokeWidth={2.5} />
-              <Text className="text-xl font-bold" style={{ color: t.text }}>
-                Xóa tài khoản
-              </Text>
-            </View>
+            <Pressable onPress={() => { deleteFunction() }}>
+              <View
+                className="flex flex-row justify-center items-center gap-4 rounded-2xl p-3 bg-red-700"
+                // style={{ backgroundColor: t.primary }}
+              >
+                <Trash size={24} color={t.text} strokeWidth={2.5} />
+                <Text className="text-xl font-bold" style={{ color: t.text }}>
+                  Xóa tài khoản
+                </Text>
+              </View>
+            </Pressable>
           </View>
         </View>
       </View>

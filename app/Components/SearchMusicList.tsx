@@ -1,7 +1,7 @@
 import { CirclePlus } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
-import { searchTrackAPI } from "../../config/musicApi";
+import { getTrackStreamUrl, searchTrackAPI } from "../../config/musicApi";
 
 type Track = {
   id: string;
@@ -38,6 +38,8 @@ export default function SearchMusicList({ searchContent }: Props) {
     setTracks([]);
 
     const data = await searchTrackAPI(title);
+    console.log(data)
+    console.log(getTrackStreamUrl(855148))
     setTracks(data.data);
     setLoading(false);
   }
