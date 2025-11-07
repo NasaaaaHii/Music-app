@@ -25,6 +25,7 @@ import {
   getError,
   onAuthStateChanged,
 } from "../../../config/firebaseConfig";
+import { getTrack } from "../../../config/musicApi";
 
 export default function Index() {
   const [DBUser, setDBUser] = useState<any>(null);
@@ -36,8 +37,26 @@ export default function Index() {
     try {
       const dataUser = await userBUS.getUserById(uid);
       const dataPlaylist = await playlistBUS.getPlaylist(uid);
+
+      const newDataPlayList = await Promise.all(
+        dataPlaylist.map(async (item) => {
+          if (item.songs.length === 0) return item;
+
+          const x = await getTrack(item.songs[0]);
+          const data =
+            x.artwork?.["1000x1000"] ||
+            x.artwork?.["480x480"] ||
+            x.artwork?.["150x150"] ||
+            "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+          return {
+            ...item,
+            img: item.songs.length > 0 ? data : "",
+          };
+        })
+      );
+
       setDBUser(dataUser);
-      setDBPlaylist(dataPlaylist);
+      setDBPlaylist(newDataPlayList);
     } catch (e) {
       const err = e as Error;
       console.log(err.message);
@@ -77,7 +96,7 @@ export default function Index() {
     return () => {
       sub.remove();
       sub2.remove();
-    }
+    };
   }, []);
 
   if (loadingPage)
@@ -170,7 +189,7 @@ export default function Index() {
             <Pressable
               onPress={() => {
                 router.push({
-                  pathname: "/modal/create-playlist"
+                  pathname: "/modal/create-playlist",
                 });
               }}
             >
@@ -208,16 +227,18 @@ export default function Index() {
                   }}
                 >
                   <View className="bg-white flex flex-row items-center gap-5 ml-6 mr-6 rounded-lg">
-                    {item.songs.length < 0 ? (
+                    {item.songs.length > 0 ? (
                       <Image
-                        source={item.songs[0]}
+                        source={{ uri: item.img }}
                         style={{ width: 83, height: 83 }}
+                            resizeMode="cover"
                       />
                     ) : (
                       <View className="p-6 bg-[#f0eff4]">
                         <Music size={40} color="#737373" />
                       </View>
                     )}
+                    
                     <View>
                       <Text className="text-md font-semibold text-gray-900">
                         {item.name}

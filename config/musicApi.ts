@@ -23,3 +23,16 @@ export async function getTrackStreamUrl(trackId: number) {
   const streamUrl = `${host}/v1/tracks/${trackId}/stream?app_name=musicapp`;
   return streamUrl;
 }
+
+export async function getTrack(id: number) {
+  try {
+    const res = await fetch(
+      `https://discoveryprovider.audius.co/v1/tracks/${id}`,
+    );
+    const data = await res.json();
+    return data.data;
+  } catch (e) {
+    const err = e as Error;
+    console.log(err.message);
+  }
+}

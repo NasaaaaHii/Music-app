@@ -63,8 +63,6 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
       };
     });
 
-    console.log(updatedData);
-
     setTracks(updatedData);
     setLoading(false);
   }

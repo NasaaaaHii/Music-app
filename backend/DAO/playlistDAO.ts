@@ -1,28 +1,47 @@
-import { addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { FIRESTORE_DB } from "../../config/firebaseConfig";
 
+type PlayList = {
+  id: string;
+  name: string;
+  songs: any[];
+};
+
 const playlistDAO = {
-  async getPlaylist(idUser: string) {
+  async getPlaylist(idUser: string): Promise<PlayList[]> {
     try {
       const ref = collection(FIRESTORE_DB, "users", idUser, "playlists");
       const response = await getDocs(ref);
 
-      return response.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      return response.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as PlayList
+      );
     } catch (e) {
       throw e;
     }
   },
 
-  async getPlaylistByIdPL(uid: string, plid: string){
+  async getPlaylistByIdPL(uid: string, plid: string) {
     try {
-      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid)
-      const response = await getDoc(ref)
-      return response.data()
+      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid);
+      const response = await getDoc(ref);
+      return response.data();
     } catch (error) {
-      throw error
+      throw error;
     }
   },
 
@@ -39,25 +58,29 @@ const playlistDAO = {
     }
   },
 
-  async addSongInPlaylist(uid: string, plid: string, songid: number){
+  async addSongInPlaylist(uid: string, plid: string, songid: number) {
     try {
-      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid)
-      await setDoc(ref, {
-        songs: arrayUnion(songid)
-      }, { merge: true })
+      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid);
+      await setDoc(
+        ref,
+        {
+          songs: arrayUnion(songid),
+        },
+        { merge: true }
+      );
     } catch (error) {
-      throw error
+      throw error;
     }
   },
 
-  async deleteSongInPlaylist(uid: string, plid: string, songid: number){
+  async deleteSongInPlaylist(uid: string, plid: string, songid: number) {
     try {
-      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid)
+      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid);
       await updateDoc(ref, {
-        songs: arrayRemove(songid)
-      })
+        songs: arrayRemove(songid),
+      });
     } catch (error) {
-      throw error
+      throw error;
     }
   },
 };
