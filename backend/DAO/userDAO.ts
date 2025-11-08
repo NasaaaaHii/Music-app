@@ -44,7 +44,7 @@ const userDAO = {
         return deleteDoc(playlist.ref)
       })
       await Promise.all(refPlaylistsSub)
-
+ 
       const ref = doc(FIRESTORE_DB, "users", uid)
       await deleteDoc(ref)
     } catch (error) {

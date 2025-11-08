@@ -29,6 +29,7 @@ import { getTrack } from "../../../config/musicApi";
 export default function Index() {
   const [DBUser, setDBUser] = useState<any>(null);
   const [DBPlaylist, setDBPlaylist] = useState<any>(null);
+  const [DBLiked, setDBLiked] = useState<any>(null);
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
 
@@ -130,15 +131,7 @@ export default function Index() {
             <View className="flex flex-row gap-5 pl-5">
               <Pressable
                 onPress={() =>
-                  router.push({
-                    pathname: "/library/playlists",
-                    params: {
-                      type: "category",
-                      icon: "heart",
-                      title: "Yêu thích",
-                      count: 0,
-                    },
-                  })
+                  router.push("/library/liked")
                 }
               >
                 <View className="bg-white w-[130px] h-[130px] p-4 flex flex-col justify-between rounded-xl">

@@ -5,7 +5,6 @@ import {
   CirclePlus,
   EllipsisVertical,
   Heart,
-  Music,
   Pause,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -20,20 +19,31 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MusicEqualizer from "../../Components/MusicEqualizer";
 
 import { useAudioPlayer } from "expo-audio";
 import likedBUS from "../../../backend/BUS/likedBUS";
-import playlistBUS from "../../../backend/BUS/playlistBUS";
-import userBUS from "../../../backend/BUS/userBUS";
 import {
   FIREBASE_AUTH,
   getError,
   onAuthStateChanged,
 } from "../../../config/firebaseConfig";
 import { getTrack, getTrackStreamUrl } from "../../../config/musicApi";
+import MusicEqualizer from "../../Components/MusicEqualizer";
 
 export default function PlayLists() {
+  type Track = {
+    id: string;
+    name: string;
+    album: {
+      images: {
+        url: string;
+      }[];
+      artists: {
+        name: string;
+      }[];
+    };
+  };
+
   const params = useLocalSearchParams<any>();
   const [loading, setLoading] = useState(false);
   const [posMusicPlaying, setPosMusicPlaying] = useState<any>(null);
@@ -41,35 +51,33 @@ export default function PlayLists() {
   const [currentUrl, setCurrUrl] = useState<string | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(0);
+
   const player = useAudioPlayer();
 
-  useEffect(() => {
-    if (!urlMusicPlaying) return;
+  //   useEffect(() => {
+  //     if(!urlMusicPlaying) return
 
-    if (currentUrl !== urlMusicPlaying) {
-      player.replace(urlMusicPlaying);
-      setCurrUrl(urlMusicPlaying);
-    }
+  //     if(currentUrl !== urlMusicPlaying){
+  //       player.replace(urlMusicPlaying)
+  //       setCurrUrl(urlMusicPlaying)
+  //     }
 
-    if (isPlaying === 0) player.pause();
-    else player.play();
-  }, [urlMusicPlaying, isPlaying]);
+  //     if(isPlaying === 0) player.pause()
+  //     else player.play()
+  //   }, [urlMusicPlaying, isPlaying])
 
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
-  const [DBUser, setDBUser] = useState<any>(null);
-  const [DBPlaylist, setDBPlaylist] = useState<any>(null);
-  const [DBSongList, setDBSongList] = useState<any>(null);
+  const [DBLiked, setDBLiked] = useState<any>(null);
 
   async function loadDB() {
     try {
-      const uid = FIREBASE_AUTH.currentUser!.uid;
-      const plid = params.idPlaylists;
-      const dataUser = await userBUS.getUserById(uid);
-      const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
+      const uid = FIREBASE_AUTH.currentUser?.uid!;
+      const data = await likedBUS.getLiked(uid);
+      console.log(data.liked);
 
       const newData = await Promise.all(
-        data.songs.map(async (id) => {
+        data.liked.map(async (id) => {
           const item = await getTrack(id);
           const url = await getTrackStreamUrl(id);
 
@@ -96,13 +104,12 @@ export default function PlayLists() {
             },
             image: artworkUrl,
             url: url,
-            is_liked: dataUser?.liked.includes(id),
           };
         })
       );
-      setDBPlaylist(data);
-      setDBSongList(newData);
-      console.log(newData);
+
+      console.log(newData)
+      setDBLiked(newData)
     } catch (e) {
       const err = e as Error;
       console.log(err.message);
@@ -162,7 +169,7 @@ export default function PlayLists() {
                 />
               </Pressable>
               <View className="flex flex-row justify-center items-center h-full">
-                <Text className="text-xl font-semibold">Danh sách phát</Text>
+                <Text className="text-xl font-semibold">Danh mục</Text>
               </View>
               <Pressable onPress={() => router.back()} className="w-fit">
                 <Feather
@@ -174,45 +181,31 @@ export default function PlayLists() {
               </Pressable>
             </View>
           </View>
-
-          {DBSongList.length > 0 && (
-            <View className="flex px-20 flex-row justify-center items-center">
-              <Image
-                source={{ uri: DBSongList[0].image }}
-                resizeMode="cover"
-                style={{ width: 250, height: 250, borderRadius: 10 }}
-              />
-            </View>
-          )}
-          {DBSongList.length === 0 && (
             <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl p-20">
-              <Music size={100} color={"#d0cfd5"} />
+              <Heart size={100} color={"#d0cfd5"} />
             </View>
-          )}
-
           <View>
             <Text className="font-semibold text-xl text-center">
-              {DBPlaylist.name}
+              {"Yêu thích"}
             </Text>
             <Text className="text-gray-500 text-base text-center">
-              {DBPlaylist.songs.length} bài hát
+              {DBLiked.length} bài hát
             </Text>
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">
             <Pressable
               className="flex flex-col items-center"
               onPress={() => {
-                if (posMusicPlaying === null) {
-                  setPosMusicPlaying(0);
-                  setUrlMusicPlaying(DBSongList[0].url);
-                  setIsPlaying(1 - isPlaying);
-                  return;
-                }
-
-                const pos = (posMusicPlaying + 1) % DBSongList.length;
-                setPosMusicPlaying(pos);
-                setUrlMusicPlaying(DBSongList[pos].url);
-                setIsPlaying(1);
+                // if(posMusicPlaying === null){
+                //   setPosMusicPlaying(0)
+                //   setUrlMusicPlaying(DBSongList[0].url)
+                //   setIsPlaying(1 - isPlaying)
+                //   return
+                // }
+                // const pos = (posMusicPlaying + 1) % DBSongList.length
+                // setPosMusicPlaying(pos)
+                // setUrlMusicPlaying(DBSongList[pos].url)
+                // setIsPlaying(1)
               }}
             >
               <CircleArrowRight size={24} strokeWidth={1.5} color={"#000"} />
@@ -220,15 +213,15 @@ export default function PlayLists() {
             </Pressable>
             <Pressable
               onPress={() => {
-                if (DBSongList.length > 0) {
-                  if (posMusicPlaying === null) {
-                    setPosMusicPlaying(0);
-                    setUrlMusicPlaying(DBSongList[0].url);
-                  }
-                  setIsPlaying(1 - isPlaying);
-                }
+                // if (DBSongList.length > 0) {
+                //   if(posMusicPlaying === null){
+                //     setPosMusicPlaying(0)
+                //     setUrlMusicPlaying(DBSongList[0].url)
+                //   }
+                //   setIsPlaying(1 - isPlaying)
+                // }
               }}
-              className={`${DBSongList.length > 0 ? "bg-[#8546ec]" : "bg-gray-300"} px-7 py-3 rounded-full`}
+              className={`${true ? "bg-[#8546ec]" : "bg-gray-300"} px-7 py-3 rounded-full`}
             >
               <Text className="text-white text-lg font-semibold">
                 {isPlaying === 0 ? "Phát nhạc" : "Tạm dừng"}
@@ -237,12 +230,12 @@ export default function PlayLists() {
             <Pressable
               className="flex flex-col items-center"
               onPress={() => {
-                router.push({
-                  pathname: "/library/addMusic",
-                  params: {
-                    idPlaylists: params.idPlaylists,
-                  },
-                });
+                // router.push({
+                //   pathname: "/library/addMusic",
+                //   params: {
+                //     idPlaylists: params.idPlaylists,
+                //   },
+                // });
               }}
             >
               <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />
@@ -259,7 +252,7 @@ export default function PlayLists() {
             )}
             <FlatList
               scrollEnabled={false}
-              data={DBSongList}
+              data={DBLiked}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{
                 paddingHorizontal: 20,
@@ -270,15 +263,16 @@ export default function PlayLists() {
                   className={`flex flex-row items-center p-3 ${urlMusicPlaying === item.url ? "bg-gray-100" : ""} `}
                 >
                   <Pressable
-                    onPress={() => {
-                      if (index === posMusicPlaying) {
-                        setIsPlaying(1 - isPlaying);
-                      } else {
-                        setUrlMusicPlaying(item.url);
-                        setPosMusicPlaying(index);
-                        setIsPlaying(1);
-                      }
-                    }}
+                    // onPress={() => {
+                    //   if(index===posMusicPlaying){
+                    //     setIsPlaying(1 - isPlaying)
+                    //   }
+                    //   else{
+                    //     setUrlMusicPlaying(item.url)
+                    //     setPosMusicPlaying(index)
+                    //     setIsPlaying(1)
+                    //   }
+                    // }}
                     className={`${urlMusicPlaying === item.url ? "opacity-50" : "opacity-100"}`}
                   >
                     <Image
@@ -305,34 +299,19 @@ export default function PlayLists() {
                     </Text>
                   </View>
                   <View className="flex flex-row items-center gap-1">
-                    <Pressable
-                      onPress={() => {
-                        const newData = [...DBSongList];
-                        const state = newData[index].is_liked;
-                        if (state) {
-                          newData[index] = {
-                            ...newData[index],
-                            is_liked: false,
-                          };
-                          likedBUS.deleteLiked(FIREBASE_AUTH.currentUser?.uid!, item.id);
-                        } else {
-                          newData[index] = {
-                            ...newData[index],
-                            is_liked: true,
-                          };
-                          likedBUS.addLiked(FIREBASE_AUTH.currentUser?.uid!, item.id);
-                        }
-                        setDBSongList(newData);
-                        loadDB();
-                        DeviceEventEmitter.emit("playlistStatus", "success");
-
-                      }}
-                    >
+                    <Pressable onPress={() => {
+                      const newData = [...DBLiked]
+                      newData.splice(index, 1)
+                      setDBLiked(newData)
+                      likedBUS.deleteLiked(FIREBASE_AUTH.currentUser?.uid!, item.id)
+                      loadDB()
+                      DeviceEventEmitter.emit("playlistStatus", "success");
+                    }}>
                       <Heart
                         width={22}
                         strokeWidth={1.5}
-                        fill={item.is_liked ? "#f9448d" : "white"}
-                        color={item.is_liked ? "#f9448d" : "black"}
+                        fill={"#f9448d"}
+                        color={"#f9448d"}
                       />
                     </Pressable>
                     <EllipsisVertical width={22} strokeWidth={1.5} />
