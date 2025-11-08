@@ -20,7 +20,6 @@ const userDAO = {
         {
           email: email,
           liked: [],
-          downloaded: [],
         },
         { merge: true }
       );
@@ -42,7 +41,7 @@ const userDAO = {
       const refPlaylists = collection(FIRESTORE_DB, "users", uid, "playlists")
       const responsePlaylists = await getDocs(refPlaylists)
       const refPlaylistsSub = responsePlaylists.docs.map((playlist) => {
-        deleteDoc(playlist.ref)
+        return deleteDoc(playlist.ref)
       })
       await Promise.all(refPlaylistsSub)
 

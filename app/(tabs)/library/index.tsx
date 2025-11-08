@@ -1,10 +1,9 @@
 import { Redirect, router } from "expo-router";
 import {
-  ArrowDownToLine,
   Heart,
   LibraryBig,
   Music,
-  Plus,
+  Plus
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -151,30 +150,6 @@ export default function Index() {
                     <Text className="text-sm text-gray-600">
                       {DBUser.liked.length} bài hát
                     </Text>
-                  </View>
-                </View>
-              </Pressable>
-
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/library/playlists",
-                    params: {
-                      type: "category",
-                      icon: "heart",
-                      title: "Đã tải",
-                      count: 1,
-                    },
-                  })
-                }
-              >
-                <View className="bg-white w-[130px] h-[130px] p-4 flex flex-col justify-between rounded-xl">
-                  <ArrowDownToLine size={30} color={"#28a745"} />
-                  <View>
-                    <Text className="text-md font-semibold text-gray-900">
-                      Đã tải
-                    </Text>
-                    <Text className="text-sm text-gray-600">{0} bài hát</Text>
                   </View>
                 </View>
               </Pressable>
