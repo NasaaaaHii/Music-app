@@ -1,7 +1,9 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { Redirect, router } from "expo-router";
 import { Moon } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
@@ -10,6 +12,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import playlistBUS from "../../../backend/BUS/playlistBUS";
+import {
+  FIREBASE_AUTH,
+  getError,
+  onAuthStateChanged,
+} from "../../../config/firebaseConfig";
+import { getTrack } from "../../../config/musicApi";
 import ButtonAnimation from "../../Animations/ButtonAnimation";
 import MusicCard from "../../Components/MusicCard";
 import { t } from "../../theme";
@@ -21,7 +30,6 @@ export default function Home() {
     { id: "4", title: "Nghệ sĩ" },
   ];
   const [refreshing, setRefreshing] = useState(false);
-  // const [time, setTime] = useState(6);
   const handlePress = (item: string) => {
     alert(`${item}`);
   };
@@ -39,15 +47,6 @@ export default function Home() {
     nhac2: require("../../../assets/images/nhac_2.png"),
     nhac3: require("../../../assets/images/nhac_3.png"),
   };
-
-  const gridData = [
-    { id: "1", title: "Playlist 1", image: images.nhac1, list: "15 bài hát" },
-    { id: "2", title: "Playlist 2", image: images.nhac2, list: "20 bài hát" },
-    { id: "3", title: "Playlist 3", image: images.nhac3, list: "22 bài hát" },
-    { id: "4", title: "Playlist 4", image: images.nhac2, list: "9 bài hát" },
-    { id: "5", title: "Playlist 5", image: images.nhac3, list: "19 bài hát" },
-    { id: "6", title: "Playlist 6", image: images.nhac1, list: "30 bài hát" },
-  ];
   const albumData = [
     {
       id: "1",
@@ -71,6 +70,96 @@ export default function Home() {
       img: images.nhac3,
     },
   ];
+  const openPlayer = (item: any) => {
+    console.log(item);
+    router.push({
+      pathname: "/Player",
+      params: {
+        id: String(item.id || ""),
+        title: item.title || "Đang phát",
+        artist: item.artist || "Nghệ sĩ",
+      },
+    });
+  };
+
+  const openList = (pl: any) => {
+    console.log("openList:", pl.id, pl.songs?.length);
+    router.push({
+      pathname: "/AlbumPlaylist",
+      params: {
+        id: String(pl.id),
+        title: pl.name,
+        image: pl.img ?? pl.image ?? "",
+        songs: JSON.stringify(pl.songs ?? []),
+      },
+    });
+  };
+
+  const [valid, setValid] = useState<any>(null);
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [playlistsDB, setPlaylistsDB] = useState<any>();
+  async function loadDB() {
+    try {
+      const dataPlaylist = await playlistBUS.getPlaylist(
+        FIREBASE_AUTH.currentUser?.uid!
+      );
+
+      console.log(FIREBASE_AUTH.currentUser?.uid);
+
+      const newDataPlayList = await Promise.all(
+        dataPlaylist.map(async (item) => {
+          if (item.songs.length === 0) return item;
+
+          const x = await getTrack(item.songs[0]);
+          const data =
+            x.artwork?.["1000x1000"] ||
+            x.artwork?.["480x480"] ||
+            x.artwork?.["150x150"] ||
+            "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+          return {
+            ...item,
+            img: item.songs.length > 0 ? data : "",
+          };
+        })
+      );
+
+      console.log(newDataPlayList);
+
+      setPlaylistsDB(newDataPlayList);
+    } catch (e) {
+      const err = e as Error;
+      console.log(err.message);
+    }
+  }
+
+  async function init() {
+    try {
+      setLoadingPage(true);
+      const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+        if (user && user.emailVerified) {
+          setValid(user);
+          await loadDB();
+        }
+        setLoadingPage(false);
+      });
+      return f;
+    } catch (e: any) {
+      alert(getError(e.code));
+    }
+  }
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  if (loadingPage)
+    return (
+      <View className="flex-1 bg-purple-900 justify-center items-center">
+        <ActivityIndicator size={"large"} color="white" />
+      </View>
+    );
+  if (!valid) return <Redirect href="/" />;
+
   return (
     <ScrollView
       className="flex-1 "
@@ -121,22 +210,6 @@ export default function Home() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 12 }}
         />
-        <View className="mt-12">
-          <Text className="font-bold text-xl" style={{ color: t.text }}>
-            Đã nghe gần đây
-          </Text>
-          <FlatList
-            className="mt-6"
-            data={gridData}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <MusicCard item={item} variant="default" />
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingRight: 20 }}
-          />
-        </View>
         <View className="mt-10">
           <Text className="font-bold text-xl mb-4" style={{ color: t.text }}>
             Gợi ý cho bạn
@@ -189,10 +262,21 @@ export default function Home() {
           </View>
           <FlatList
             className="mt-6"
-            data={gridData}
-            renderItem={({ item }) => (
-              <MusicCard item={item} variant="withList" />
-            )}
+            data={playlistsDB}
+            renderItem={({ item }) => {
+              const normalized = {
+                id: item.id,
+                title: item.name,
+                artist: "Playlist",
+                image: item.img,
+                songs: item.songs || [],
+              };
+              return (
+                <TouchableOpacity onPress={() => openList(normalized)}>
+                  <MusicCard item={normalized} variant="withList" />
+                </TouchableOpacity>
+              );
+            }}
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -214,7 +298,9 @@ export default function Home() {
             className="mt-6"
             data={albumData}
             renderItem={({ item }) => (
-              <MusicCard item={item} variant="albumBoard" />
+              <TouchableOpacity onPress={() => openList(item)}>
+                <MusicCard item={item} variant="albumBoard" />
+              </TouchableOpacity>
             )}
             horizontal
             showsHorizontalScrollIndicator={false}

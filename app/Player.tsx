@@ -11,19 +11,12 @@ import {
   Timer,
   X,
 } from "lucide-react-native";
-import { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import MusicCard from "./Components/MusicCard";
+import { useMusic } from "./Context/MusicContext";
 import { t } from "./theme";
 
-const player = () => {
-  const artistData = {
-    id: "1",
-    title: "Noo Phước Thịnh",
-    image: require("../assets/images/nhac_1.png"),
-    follow: "2.5M",
-  };
-  const [isPlay, setIsPlay] = useState(false);
+const Player = () => {
+  const { currentTrack, isPlaying, setIsPlaying } = useMusic();
   return (
     <ScrollView className="flex-1" style={{ backgroundColor: t.cardBg }}>
       <View className="px-4 pb-8 pt-8">
@@ -49,7 +42,7 @@ const player = () => {
                 letterSpacing: 0.3,
               }}
             >
-              Khó quá thì về mẹ nuôi
+              {currentTrack?.title}
             </Text>
           </View>
 
@@ -64,8 +57,10 @@ const player = () => {
 
         <View className="mt-16 flex items-center px-2">
           <Image
-            className="h-96 w-full rounded-lg"
-            source={require("../assets/images/nhac_1.png")}
+            className="rounded-lg"
+            style={{ width: 200, height: 200 }}
+            resizeMode="cover"
+            source={{ uri: currentTrack?.image }}
           />
         </View>
 
@@ -79,10 +74,10 @@ const player = () => {
                 letterSpacing: 0.2,
               }}
             >
-              Khó quá thì về mẹ nuôi
+              {currentTrack?.title}
             </Text>
             <Text style={{ color: t.textMuted, fontSize: 16 }}>
-              Noo Phước Thịnh
+              {currentTrack?.artist}
             </Text>
           </View>
           <View className="flex flex-row gap-1">
@@ -132,9 +127,9 @@ const player = () => {
           <TouchableOpacity
             className="p-5 rounded-full"
             style={{ backgroundColor: t.primary }}
-            onPress={() => setIsPlay(!isPlay)}
+            onPress={() => setIsPlaying(!isPlaying)}
           >
-            {isPlay ? (
+            {isPlaying ? (
               <Pause
                 color="#001018"
                 fill="#001018"
@@ -159,16 +154,16 @@ const player = () => {
         </View>
 
         <View className="mt-10">
-          <MusicCard
-            item={artistData}
+          {/* <MusicCard
+             item={artistData}
             variant="artistsBoard"
-            width="w-full"
-            imageHeight="h-48"
-          />
+            width={40}
+            imageHeight={40}
+          /> */}
         </View>
       </View>
     </ScrollView>
   );
 };
 
-export default player;
+export default Player;

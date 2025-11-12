@@ -314,18 +314,23 @@ export default function PlayLists() {
                             ...newData[index],
                             is_liked: false,
                           };
-                          likedBUS.deleteLiked(FIREBASE_AUTH.currentUser?.uid!, item.id);
+                          likedBUS.deleteLiked(
+                            FIREBASE_AUTH.currentUser?.uid!,
+                            item.id
+                          );
                         } else {
                           newData[index] = {
                             ...newData[index],
                             is_liked: true,
                           };
-                          likedBUS.addLiked(FIREBASE_AUTH.currentUser?.uid!, item.id);
+                          likedBUS.addLiked(
+                            FIREBASE_AUTH.currentUser?.uid!,
+                            item.id
+                          );
                         }
                         setDBSongList(newData);
                         loadDB();
                         DeviceEventEmitter.emit("playlistStatus", "success");
-
                       }}
                     >
                       <Heart
