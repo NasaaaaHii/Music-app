@@ -8,13 +8,7 @@ import {
   Trash,
   User,
 } from "lucide-react-native";
-import {
-  Dialog,
-  Portal,
-  Provider,
-  Text,
-  TextInput,
-} from "react-native-paper";
+import { Dialog, Portal, Provider, Text, TextInput } from "react-native-paper";
 
 import {
   deleteUser,
@@ -75,7 +69,7 @@ export default function Setting() {
       setValid(null);
     } catch (e: any) {
       setVisible(false);
-      if(e.code==="auth/invalid-credential") alert("Mật khẩu không hợp lệ")
+      if (e.code === "auth/invalid-credential") alert("Mật khẩu không hợp lệ");
       else alert(getError(e.code));
     }
   }

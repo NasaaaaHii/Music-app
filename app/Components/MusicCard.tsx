@@ -1,5 +1,4 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Ellipsis } from "lucide-react-native";
 import { useState } from "react";
 import {
   Image,
@@ -13,7 +12,8 @@ type MusicCardProps = {
   item: {
     id: string;
     title: string;
-    image?: ImageSourcePropType;
+    image?: ImageSourcePropType | string;
+    artist?: string;
     list?: string;
     year?: string;
     follow?: string;
@@ -26,23 +26,35 @@ type MusicCardProps = {
     | "albumBoard"
     | "artistsBoard"
     | "albumList";
-  width?: string;
-  imageHeight?: string;
+  width?: number;
+  imageHeight?: number;
 };
 
 export default function MusicCard({
   item,
   variant = "default",
-  width = "w-40",
-  imageHeight = "h-40",
+  width = 40,
+  imageHeight = 40,
 }: MusicCardProps) {
-  const imageSource = item.image;
   const [isFollow, setIsFollow] = useState(true);
+  const raw = (item as any).image;
+  const imageSource: ImageSourcePropType = {
+    uri: raw,
+  };
+
   if (variant == "artistsBoard") {
     return (
       <View className="bg-white rounded-2xl p-4 flex flex-row items-center justify-between border border-gray-200">
         <View className="flex flex-row items-center gap-4 flex-1">
-          <Image className="w-16 h-16 rounded-full" source={imageSource} />
+          <Image
+            className="rounded-full"
+            source={imageSource}
+            style={{
+              backgroundColor: t.textMuted,
+              width: width,
+              height: imageHeight,
+            }}
+          />
           <View className="flex-1">
             <Text className="font-bold text-lg text-gray-900">
               {item.title}
@@ -83,59 +95,73 @@ export default function MusicCard({
   }
   if (variant == "albumList") {
     return (
-      <TouchableOpacity activeOpacity={0.7}>
-        <LinearGradient
-          colors={t.heroGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 0 }}
-          style={{
-            borderRadius: 12,
-            padding: 12,
-          }}
-        >
-          <View className="flex flex-row gap-3 items-center">
-            <Image className="h-14 w-14 rounded-lg" source={imageSource} />
-            <View className="flex-1 flex flex-col gap-1">
-              <Text className="font-bold text-base" style={{ color: t.text }}>
-                {item.title}
-              </Text>
-              <Text className="text-sm" style={{ color: t.textMuted }}>
-                {item.musicArtist?.join(", ")}
-              </Text>
-            </View>
-            <TouchableOpacity className="p-2">
-              <Ellipsis
-                style={{ transform: [{ rotate: "90deg" }] }}
-                size={20}
-                color={t.textMuted}
-              />
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
+      <View className="flex flex-row items-center gap-3">
+        <Image
+          source={imageSource}
+          style={{ width: 56, height: 56, borderRadius: 8 }}
+        />
+        <View className="flex-1">
+          <Text numberOfLines={1} style={{ color: t.text, fontWeight: "600" }}>
+            {item.title}
+          </Text>
+          {!!item.artist && (
+            <Text
+              numberOfLines={1}
+              style={{ color: t.textMuted, fontSize: 12 }}
+            >
+              {item.artist}
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  }
+  if (variant === "withList") {
+    return (
+      <View
+        className="mr-4 rounded-lg overflow-hidden"
+        style={{ width: 140, backgroundColor: t.cardBg }}
+      >
+        <Image
+          source={imageSource}
+          style={{ width: 140, height: 140 }}
+          resizeMode="cover"
+        />
+        <View style={{ padding: 8 }}>
+          <Text style={{ color: t.text, fontWeight: "600" }} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={{ color: t.textMuted, fontSize: 12 }} numberOfLines={1}>
+            {item.list || item.artist || ""}
+          </Text>
+        </View>
+      </View>
     );
   }
 
-  return (
-    <TouchableOpacity
-      className={`mr-4 ${width} rounded-lg  overflow-hidden`}
-      style={{ backgroundColor: t.textMuted }}
-    >
-      <Image source={imageSource} className={`w-full ${imageHeight}`} />
-      <View className="p-3">
-        <Text className="font-semibold text-gray-900 text-sm" numberOfLines={1}>
-          {item.title}
-        </Text>
-        {variant === "withList" && item.list && (
-          <Text className="text-gray-500 text-xs mt-1">{item.list}</Text>
-        )}
-
-        {variant === "albumBoard" && (
-          <Text className="text-gray-500 text-xs mt-1">
-            {item.year} • {item.year}
+  if (variant === "albumBoard") {
+    return (
+      <View
+        className="mr-4 rounded-lg overflow-hidden"
+        style={{ width: 120, backgroundColor: t.cardBg }}
+      >
+        <Image
+          source={imageSource}
+          style={{ width: 120, height: 120 }}
+          resizeMode="cover"
+        />
+        <View style={{ padding: 6 }}>
+          <Text
+            style={{ color: t.text, fontSize: 13, fontWeight: "600" }}
+            numberOfLines={1}
+          >
+            {item.title}
           </Text>
-        )}
+          <Text style={{ color: t.textMuted, fontSize: 11 }} numberOfLines={1}>
+            {(item.artist || "") + (item.year ? " • " + item.year : "")}
+          </Text>
+        </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  }
 }

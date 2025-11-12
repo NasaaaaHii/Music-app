@@ -2,12 +2,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Tabs } from "expo-router";
 import { House, Library, Search, UserRound } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
+import MiniPlayerSong from "../Components/MiniPlayerSong";
 import { t } from "../theme";
 
 export default function _layout() {
   return (
-    <View className="flex-1" style={{ backgroundColor: t.surface }}>
-      <Tabs 
+    <View
+      className="flex flex-col flex-1 gap-2"
+      style={{ backgroundColor: t.surface }}
+    >
+      <Tabs
         initialRouteName="home"
         screenOptions={{
           headerShown: false,
@@ -99,6 +103,9 @@ export default function _layout() {
           }}
         />
       </Tabs>
+      <View className="px-4">
+        <MiniPlayerSong />
+      </View>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   ChevronLeft,
   CirclePlus,
@@ -8,52 +8,93 @@ import {
   Pause,
   Play,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
-  ImageSourcePropType,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import "../assets/images/nhac_1.png";
+import { getTrack } from "../config/musicApi";
 import MusicCard from "./Components/MusicCard";
+import { useMusic } from "./Context/MusicContext";
 import { t } from "./theme";
-type MusicType = {
-  id: string;
-  title: string;
-  image: ImageSourcePropType;
-  musicArtist: string[];
-};
-const AlbumPlaylist = ({ like, time }: { like: number; time: string }) => {
+
+const AlbumPlaylist = () => {
+  const { setCurrentTrack } = useMusic();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const albumData: MusicType[] = [
-    {
-      id: "1",
-      title: "Nhạc 1",
-      image: require("../assets/images/nhac_1.png"),
-      musicArtist: ["ca sĩ 1", "ca sĩ 2"],
-    },
-    {
-      id: "2",
-      title: "Nhạc 2",
-      image: require("../assets/images/nhac_2.png"),
-      musicArtist: ["ca sĩ 1", "ca sĩ 2 , ca sĩ 3"],
-    },
-    {
-      id: "3",
-      title: "Nhạc 3",
-      image: require("../assets/images/nhac_3.png"),
-      musicArtist: ["ca sĩ 1"],
-    },
-  ];
+  const params = useLocalSearchParams<{
+    id?: string;
+    title?: string;
+    songs?: string;
+    image?: string;
+  }>();
+  const [tracks, setTracks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const songIds: string[] = (() => {
+    try {
+      const s = params.songs ? JSON.parse(String(params.songs)) : [];
+      console.log(
+        "params.songs raw len:",
+        String(params.songs ?? "").length,
+        "ids:",
+        s.length
+      );
+      return s;
+    } catch {
+      return [];
+    }
+  })();
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      const ids = songIds;
+      if (!ids.length) {
+        if (mounted) setTracks([]);
+        return;
+      }
+      setLoading(true);
+      try {
+        const meta: any = [];
+        for (let i = 0; i < songIds.length; i++) {
+          const track = await getTrack(parseInt(ids[i]));
+          if (track) {
+            meta.push({
+              id: String(track.id),
+              title: track.title,
+              artist: track.user?.name || track.artists?.[0]?.name || "Nghệ sĩ",
+              image:
+                track.artwork?.["480x480"] || track.artwork?.["150x150"] || "",
+            });
+          }
+          console.log(songIds[i]);
+        }
+        if (mounted) setTracks(meta);
+        console.log("Loaded tracks:", meta.length);
+      } catch (e) {
+        console.log("load tracks error:", (e as Error).message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [params.songs]);
+  const openPlayer = (item: any, index: number) => {
+    setCurrentTrack(item, tracks, index);
+  };
+  console.log(songIds);
+  console.log(tracks);
   return (
     <ScrollView className="flex-1" style={{ backgroundColor: t.tabBarBg }}>
       <View className="px-4 pb-8 pt-14">
-        <View className="flex flex-row gap-16 items-center">
+        <View className="flex flex-row gap-20">
           <TouchableOpacity
             className="rounded-full"
             onPress={() => router.back()}
@@ -61,13 +102,17 @@ const AlbumPlaylist = ({ like, time }: { like: number; time: string }) => {
             <ChevronLeft color={t.text} size={28} strokeWidth={2.5} />
           </TouchableOpacity>
           <Image
-            className="h-60 w-60 rounded-2xl"
-            source={require("../assets/images/nhac_3.png")}
+            className="rounded-full"
             style={{
-              shadowColor: t.primary,
-              shadowOpacity: 0.5,
-              shadowRadius: 20,
+              backgroundColor: t.textMuted,
+              width: 120,
+              height: 120,
             }}
+            source={
+              params.image
+                ? { uri: String(params.image) }
+                : require("../assets/images/nhac_1.png")
+            }
           />
         </View>
         <View className="mt-10 flex flex-col gap-4">
@@ -77,14 +122,22 @@ const AlbumPlaylist = ({ like, time }: { like: number; time: string }) => {
               Dành cho bạn
             </Text>
           </View>
+          <Text className="text-xl font-bold" style={{ color: t.text }}>
+            {params.title || "Playlist"}
+          </Text>
           <Text className="text-md font-normal" style={{ color: t.textMuted }}>
-            {111} người thích - thời lượng: {11} phút
+            {tracks.length} bài hát
           </Text>
           <View className="flex flex-row justify-between items-center">
             <View className="flex flex-row gap-7 items-center">
               <Image
-                className="h-12 w-12 rounded-full"
-                source={require("../assets/images/nhac_3.png")}
+                className="rounded-full"
+                style={{
+                  backgroundColor: t.textMuted,
+                  width: 40,
+                  height: 40,
+                }}
+                source={{ uri: String(params.image) }}
               />
               <CirclePlus color={t.textMuted} size={28} strokeWidth={2} />
               <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
@@ -125,11 +178,14 @@ const AlbumPlaylist = ({ like, time }: { like: number; time: string }) => {
             </LinearGradient>
           </View>
         </View>
+
         <View className="flex flex-col gap-4 mt-10">
           <FlatList
-            data={albumData}
-            renderItem={({ item }) => (
-              <MusicCard item={item} variant="albumList" />
+            data={tracks}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity onPress={() => openPlayer(item, index)}>
+                <MusicCard item={item} variant="albumList" />
+              </TouchableOpacity>
             )}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ gap: 12 }}
