@@ -40,6 +40,22 @@ const playlistBUS = {
       throw error;
     }
   },
+
+  async deletePlaylist(idUser: string, idPL: string){
+    try {
+      await playlistDAO.deletePlaylist(idUser, idPL);
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async updatePlaylist(idUser: string, idPL: string, name: string){
+    try {
+      await playlistDAO.updatePlaylist(idUser, idPL, name);
+    } catch (error) {
+      throw error;
+    }
+  }
 };
 
 export default playlistBUS;

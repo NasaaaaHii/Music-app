@@ -3,6 +3,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "nativewind",
+    "lib": ["es2017", "dom"],
+
     "moduleResolution": "bundler",
     "noEmit": true,
     "strict": true,

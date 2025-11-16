@@ -84,11 +84,6 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
     }
   }
 
-  async function loadDBNoLoad() {
-    const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
-    setDBPlaylist(data);
-  }
-
   useEffect(() => {
     loadDB();
   }, []);
@@ -145,10 +140,9 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
                       return newTracks;
                     });
                     playlistBUS.addSongInPlaylist(uid, plid, item.track_id);
-                    loadDBNoLoad();
                   }}
                 >
-                  <CirclePlus width={22} strokeWidth={1.5} />
+                  <CirclePlus width={22} strokeWidth={1.5} color={'#fff'}/>
                 </Pressable>
               )}
               {item.is_inPlayList && (
@@ -164,11 +158,10 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
                       };
                       return newTracks;
                     });
-                    playlistBUS.deleteSongInPlaylist(uid, plid, item.track_id);
-                    loadDBNoLoad();
+                    playlistBUS.deleteSongInPlaylist(uid, plid, item.track_id)
                   }}
                 >
-                  <CheckCheck width={22} strokeWidth={1.5} />
+                  <CheckCheck width={22} strokeWidth={1.5} color={"#fff"}/>
                 </Pressable>
               )}
             </View>

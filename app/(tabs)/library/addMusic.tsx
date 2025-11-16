@@ -128,14 +128,8 @@ export default function AddMusicPage() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex mt-2 mb-80">
-          {activePage === "online" && (
-            <SearchMusicList
-              searchContent={content}
-              uid={FIREBASE_AUTH.currentUser?.uid!}
-              plid={params.idPlaylists}
-            />
-          )}
-          {activePage === "loved" && <FavoriteMusicList />}
+          {activePage==="online" && <SearchMusicList searchContent={content} uid={FIREBASE_AUTH.currentUser?.uid!} plid={params.idPlaylists}/>}
+          {activePage==="loved" && <FavoriteMusicList searchContent={content} uid={FIREBASE_AUTH.currentUser?.uid!} plid={params.idPlaylists}/>}
         </View>
       </ScrollView>
     </SafeAreaView>
