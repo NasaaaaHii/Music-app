@@ -403,7 +403,7 @@ export default function PlayLists() {
                         DeviceEventEmitter.emit("playlistStatus", "success");
                       }}
                     >
-                      <X width={22} strokeWidth={1.5} />
+                      <X width={22} strokeWidth={1.5} color={"#fff"}/>
                     </Pressable>
                   </View>
                 </View>
