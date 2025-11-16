@@ -77,11 +77,6 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
     }
   }
 
-  async function loadDBNoLoad() {
-    const data = await playlistBUS.getPlaylistByIdPL(uid, plid);
-    setDBPlaylist(data);
-  }
-
   useEffect(() => {
     loadDB();
   }, []);
@@ -136,7 +131,6 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
                       return newTracks;
                     });
                     playlistBUS.addSongInPlaylist(uid, plid, item.track_id);
-                    loadDBNoLoad();
                   }}
                 >
                   <CirclePlus width={22} strokeWidth={1.5} />
@@ -156,7 +150,6 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
                       return newTracks;
                     });
                     playlistBUS.deleteSongInPlaylist(uid, plid, item.track_id)
-                    loadDBNoLoad();
                   }}
                 >
                   <CheckCheck width={22} strokeWidth={1.5} />

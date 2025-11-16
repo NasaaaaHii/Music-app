@@ -1,12 +1,14 @@
-import { Feather } from "@expo/vector-icons";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import {
-  CircleArrowRight,
+  ArrowLeft,
   CirclePlus,
-  EllipsisVertical,
   Heart,
   Music,
   Pause,
+  Play,
+  SquarePen,
+  Trash,
+  X,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -102,11 +104,16 @@ export default function PlayLists() {
       );
       setDBPlaylist(data);
       setDBSongList(newData);
-      console.log(newData);
     } catch (e) {
       const err = e as Error;
       console.log(err.message);
     }
+  }
+
+  async function deletePlaylist() {
+    const uid = FIREBASE_AUTH.currentUser!.uid;
+    const plid = params.idPlaylists;
+    await playlistBUS.deletePlaylist(uid, plid);
   }
 
   async function init() {
@@ -153,25 +160,19 @@ export default function PlayLists() {
         <View className="w-full flex flex-col items-center gap-6">
           <View className="w-full">
             <View className="flex flex-row justify-between gap-6">
-              <Pressable onPress={() => router.back()} className="w-fit">
-                <Feather
-                  name="arrow-left"
-                  size={24}
-                  color="#1c1c1c"
-                  className="p-4"
-                />
+              <Pressable onPress={() => router.back()} className="w-fit p-4">
+                <ArrowLeft size={24} color={"#1c1c1c"} strokeWidth={2} />
               </Pressable>
               <View className="flex flex-row justify-center items-center h-full">
                 <Text className="text-xl font-semibold">Danh sách phát</Text>
               </View>
-              <Pressable onPress={() => router.back()} className="w-fit">
-                <Feather
-                  name="more-vertical"
+              <View className="w-fit p-4">
+                <ArrowLeft
                   size={24}
-                  color="#1c1c1c"
-                  className="p-4"
+                  color={"#rgba(255,255,255,0)"}
+                  strokeWidth={2}
                 />
-              </Pressable>
+              </View>
             </View>
           </View>
 
@@ -202,41 +203,6 @@ export default function PlayLists() {
             <Pressable
               className="flex flex-col items-center"
               onPress={() => {
-                if (posMusicPlaying === null) {
-                  setPosMusicPlaying(0);
-                  setUrlMusicPlaying(DBSongList[0].url);
-                  setIsPlaying(1 - isPlaying);
-                  return;
-                }
-
-                const pos = (posMusicPlaying + 1) % DBSongList.length;
-                setPosMusicPlaying(pos);
-                setUrlMusicPlaying(DBSongList[pos].url);
-                setIsPlaying(1);
-              }}
-            >
-              <CircleArrowRight size={24} strokeWidth={1.5} color={"#000"} />
-              <Text className="text-sm">Bài kế</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                if (DBSongList.length > 0) {
-                  if (posMusicPlaying === null) {
-                    setPosMusicPlaying(0);
-                    setUrlMusicPlaying(DBSongList[0].url);
-                  }
-                  setIsPlaying(1 - isPlaying);
-                }
-              }}
-              className={`${DBSongList.length > 0 ? "bg-[#8546ec]" : "bg-gray-300"} px-7 py-3 rounded-full`}
-            >
-              <Text className="text-white text-lg font-semibold">
-                {isPlaying === 0 ? "Phát nhạc" : "Tạm dừng"}
-              </Text>
-            </Pressable>
-            <Pressable
-              className="flex flex-col items-center"
-              onPress={() => {
                 router.push({
                   pathname: "/library/addMusic",
                   params: {
@@ -247,6 +213,55 @@ export default function PlayLists() {
             >
               <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />
               <Text className="text-sm">Thêm bài</Text>
+            </Pressable>
+
+            <Pressable
+              className="flex flex-col items-center"
+              onPress={() => {
+                try {
+                  deletePlaylist();
+                  router.push("/(tabs)/library");
+                } catch (e: any) {
+                  alert(getError(e.code));
+                }
+              }}
+            >
+              <Trash size={24} strokeWidth={1.5} color={"#000"} />
+              <Text className="text-sm">Xóa playlist</Text>
+            </Pressable>
+            <Pressable
+              className="flex flex-col items-center"
+              onPress={() => {
+                try {
+                  router.push({
+                    pathname: "/modal/modify-playlist",
+                    params: {
+                      plid: params.idPlaylists,
+                      currname: DBPlaylist.name
+                    },
+                  });
+                } catch (e: any) {
+                  alert(getError(e.code));
+                }
+              }}
+            >
+              <SquarePen size={24} strokeWidth={1.5} color={"#000"} />
+              <Text className="text-sm">Đổi tên</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                if (DBSongList.length > 0) {
+                  if (posMusicPlaying === null) {
+                    setPosMusicPlaying(0);
+                    setUrlMusicPlaying(DBSongList[0].url);
+                  }
+                  setIsPlaying(1 - isPlaying);
+                }
+              }}
+              className={`${DBSongList.length > 0 ? "bg-[#8546ec]" : "bg-gray-300"} p-3 rounded-full`}
+            >
+              <Play size={24} strokeWidth={2} color={"#fff"} />
             </Pressable>
           </View>
 
@@ -329,7 +344,6 @@ export default function PlayLists() {
                           );
                         }
                         setDBSongList(newData);
-                        loadDB();
                         DeviceEventEmitter.emit("playlistStatus", "success");
                       }}
                     >
@@ -340,7 +354,23 @@ export default function PlayLists() {
                         color={item.is_liked ? "#f9448d" : "black"}
                       />
                     </Pressable>
-                    <EllipsisVertical width={22} strokeWidth={1.5} />
+                    <Pressable
+                      onPress={() => {
+                        const uid = FIREBASE_AUTH.currentUser!.uid;
+                        const plid = params.idPlaylists;
+                        const songid = DBSongList[index].id;
+
+                        const newData = [...DBSongList];
+                        newData.splice(index, 1);
+
+                        playlistBUS.deleteSongInPlaylist(uid, plid, songid);
+
+                        setDBSongList(newData);
+                        DeviceEventEmitter.emit("playlistStatus", "success");
+                      }}
+                    >
+                      <X width={22} strokeWidth={1.5} />
+                    </Pressable>
                   </View>
                 </View>
               )}

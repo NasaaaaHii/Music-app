@@ -29,7 +29,6 @@ import { getTrack } from "../../../config/musicApi";
 export default function Index() {
   const [DBUser, setDBUser] = useState<any>(null);
   const [DBPlaylist, setDBPlaylist] = useState<any>(null);
-  const [DBLiked, setDBLiked] = useState<any>(null);
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
 
@@ -87,7 +86,7 @@ export default function Index() {
           await loadDB(FIREBASE_AUTH.currentUser!.uid);
         })();
     });
-    const sub2 = DeviceEventEmitter.addListener("statusPlaylists", (status) => {
+    const sub2 = DeviceEventEmitter.addListener("changePlaylistName", (status) => {
       if (status === "success")
         (async () => {
           await loadDB(FIREBASE_AUTH.currentUser!.uid);

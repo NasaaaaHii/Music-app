@@ -3,11 +3,12 @@ import {
   arrayRemove,
   arrayUnion,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   setDoc,
-  updateDoc,
+  updateDoc
 } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../config/firebaseConfig";
 
@@ -79,6 +80,26 @@ const playlistDAO = {
       await updateDoc(ref, {
         songs: arrayRemove(songid),
       });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async deletePlaylist(uid: string, plid: string){
+    try {
+      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid);
+      await deleteDoc(ref)
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async updatePlaylist(uid: string, plid: string, name: string){
+    try {
+      const ref = doc(FIRESTORE_DB, "users", uid, "playlists", plid);
+      await updateDoc(ref, {
+        name: name
+      })
     } catch (error) {
       throw error;
     }
