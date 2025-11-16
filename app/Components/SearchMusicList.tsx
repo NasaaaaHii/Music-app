@@ -1,6 +1,13 @@
 import { CheckCheck, CirclePlus } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { DeviceEventEmitter, FlatList, Image, Pressable, Text, View } from "react-native";
+import {
+  DeviceEventEmitter,
+  FlatList,
+  Image,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import playlistBUS from "../../backend/BUS/playlistBUS";
 import { searchTrackAPI } from "../../config/musicApi";
 
@@ -114,7 +121,9 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
               style={{ width: 70, height: 70, borderRadius: 10 }}
             />
             <View className="flex-1 mx-3">
-              <Text className="font-semibold text-base">{item.title}</Text>
+              <Text className="font-semibold text-base text-white">
+                {item.title}
+              </Text>
               <Text className="text-sm text-gray-500">
                 {item.artists && item.artists.length > 0
                   ? item.artists.join(", ")
@@ -155,7 +164,7 @@ export default function SearchMusicList({ searchContent, uid, plid }: Props) {
                       };
                       return newTracks;
                     });
-                    playlistBUS.deleteSongInPlaylist(uid, plid, item.track_id)
+                    playlistBUS.deleteSongInPlaylist(uid, plid, item.track_id);
                     loadDBNoLoad();
                   }}
                 >

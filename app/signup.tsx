@@ -1,8 +1,11 @@
 import { Checkbox } from "expo-checkbox";
+import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, router } from "expo-router";
 import { ArrowLeft, Music } from "lucide-react-native";
 import {
   ActivityIndicator,
+  Dimensions,
+  Platform,
   Pressable,
   Text,
   TextInput,
@@ -17,8 +20,9 @@ import {
   FIREBASE_AUTH,
   getError,
   onAuthStateChanged,
-  sendEmailVerification
+  sendEmailVerification,
 } from "../config/firebaseConfig";
+import { t } from "./theme";
 
 export default function SignUp() {
   const [valid, setValid] = useState(false);
@@ -27,6 +31,17 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChecked, setChecked] = useState(false);
+  const [dimensions, setDimensions] = useState(Dimensions.get("window"));
+  const isWeb = Platform.OS === "web";
+  const isTablet = dimensions.width >= 768;
+  const isDesktop = dimensions.width >= 1024;
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener("change", ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
 
   async function init() {
     try {
@@ -47,8 +62,11 @@ export default function SignUp() {
 
   if (loading)
     return (
-      <View className="flex-1 bg-purple-900 justify-center items-center">
-        <ActivityIndicator size={"large"} color="white" />
+      <View
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: t.surface }}
+      >
+        <ActivityIndicator size={"large"} color={t.primary} />
       </View>
     );
   if (valid) return <Redirect href="/(tabs)/home" />;
@@ -70,7 +88,7 @@ export default function SignUp() {
       );
       const user = userCredential.user;
       await sendEmailVerification(user);
-      await userBUS.addUser(user.email!, user.uid)
+      await userBUS.addUser(user.email!, user.uid);
       alert(
         "Đăng ký tài khoản thành công!" +
           " Một email xác minh đã được gửi đến " +
@@ -90,136 +108,320 @@ export default function SignUp() {
   }
 
   return (
-    <SafeAreaView className="bg-purple-900">
-      <View className="w-screen h-screen">
-        <View className="w-full h-full flex-col justify-between items-center p-10">
-          {/* Section 1 -- hidden */}
-          <View className="w-full flex flex-row justify-between items-center">
-            <Pressable
-              onPress={() => {
-                router.push("/");
-              }}
-              className="w-fit"
+    <LinearGradient
+      colors={t.heroGradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <View
+          className="w-screen h-screen"
+          style={{ backgroundColor: "transparent" }}
+        >
+          <View
+            className={`w-full h-full flex-col justify-between items-center ${
+              isWeb ? (isDesktop ? "p-20" : isTablet ? "p-16" : "p-10") : "p-10"
+            }`}
+          >
+            <View className="w-full flex flex-row justify-between items-center">
+              <Pressable
+                onPress={() => {
+                  router.push("/");
+                }}
+                className="w-fit"
+              >
+                <ArrowLeft size={30} color={t.text} />
+              </Pressable>
+              <View className="w-fit">
+                <ArrowLeft size={30} color={"transparent"} />
+              </View>
+            </View>
+
+            <View
+              className={`w-full flex-col justify-center items-center ${
+                isWeb ? (isDesktop ? "gap-8" : "gap-6") : "gap-6"
+              }`}
+              style={
+                isWeb && isDesktop ? { maxWidth: 600, alignSelf: "center" } : {}
+              }
             >
-              <ArrowLeft size={30} color={"#ffffff"} />
-            </Pressable>
-            <View className="w-fit">
-              <ArrowLeft size={30} color={"rgba(255,255,255,0)"} />
-            </View>
-          </View>
-
-          <View className="w-full flex-col justify-center items-center gap-5">
-            {/* Header */}
-            <View className="w-full flex-col justify-center items-center gap-1">
-              <View className="w-fit p-5 bg-[rgba(255,255,255,0.15)] rounded-full">
-                <Music size={40} color={"#fff"} />
-              </View>
-              <Text className="text-white font-normal text-3xl mt-1">
-                Đăng ký
-              </Text>
-              <Text className="text-white font-light text-base mt-2">
-                Chào mừng bạn đến với thế giới âm nhạc
-              </Text>
-            </View>
-
-            <View className="flex flex-col w-full justify-center items-center gap-3">
-              <View className="w-[80%] max-w-[500px]">
-                <Text className="w-full text-white text-base text-sm">
-                  Email
-                </Text>
-                <TextInput
-                  className="outline-none border w-full border-red-300 text-white rounded-lg placeholder:text-gray-300 p-3"
-                  placeholder="Nhập email..."
-                  onChangeText={(text) => {
-                    setEmail(text);
+              <View className="w-full flex-col justify-center items-center gap-4">
+                <LinearGradient
+                  colors={t.buttonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className={`w-fit rounded-full ${
+                    isWeb && isDesktop ? "p-8" : "p-6"
+                  }`}
+                  style={{
+                    shadowColor: t.primary,
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 16,
+                    elevation: 12,
                   }}
-                />
-              </View>
-
-              <View className="w-[80%] max-w-[500px]">
-                <Text className="w-full text-white text-base text-sm">
-                  Mật khẩu
-                </Text>
-                <TextInput
-                  className="outline-none border w-full border-red-300 text-white rounded-lg placeholder:text-gray-300 p-3"
-                  placeholder="Nhập mật khẩu..."
-                  onChangeText={(text) => {
-                    setPassword(text);
-                  }}
-                  secureTextEntry={true}
-                />
-              </View>
-
-              <View className="w-[80%] max-w-[500px]">
-                <Text className="w-full text-white text-base text-sm">
-                  Nhập lại mật khẩu
-                </Text>
-                <TextInput
-                  className="outline-none border w-full border-red-300 text-white rounded-lg placeholder:text-gray-300 p-3"
-                  placeholder="Nhập lại mật khẩu..."
-                  onChangeText={(text) => {
-                    setConfirmPassword(text);
-                  }}
-                  secureTextEntry={true}
-                />
-              </View>
-
-              <View className="w-[80%] max-w-[500px]">
-                <View className="w-full flex items-center flex-row">
-                  <Checkbox
-                    value={isChecked}
-                    onValueChange={setChecked}
-                    style={{ width: 15, height: 15 }}
+                >
+                  <Music
+                    size={isWeb && isDesktop ? 56 : 48}
+                    color={t.surface}
+                    strokeWidth={2.5}
                   />
-                  <Pressable
-                    onPress={() => {
-                      isChecked ? setChecked(false) : setChecked(true);
+                </LinearGradient>
+                <Text
+                  className={`font-bold mt-2 ${
+                    isWeb && isDesktop ? "text-5xl" : "text-4xl"
+                  }`}
+                  style={{ color: t.text, letterSpacing: 0.5 }}
+                >
+                  Đăng ký
+                </Text>
+                <Text
+                  className={`font-normal mt-1 ${
+                    isWeb && isDesktop ? "text-lg" : "text-base"
+                  }`}
+                  style={{ color: t.textMuted, textAlign: "center" }}
+                >
+                  Chào mừng bạn đến với thế giới âm nhạc
+                </Text>
+              </View>
+
+              <View
+                className={`flex flex-col w-full justify-center items-center ${
+                  isWeb ? "gap-5" : "gap-4"
+                }`}
+              >
+                <View
+                  className={`${
+                    isWeb
+                      ? isDesktop
+                        ? "w-full max-w-[500px]"
+                        : isTablet
+                          ? "w-[70%] max-w-[500px]"
+                          : "w-[85%] max-w-[500px]"
+                      : "w-[85%] max-w-[500px]"
+                  }`}
+                >
+                  <Text
+                    className="w-full text-sm mb-2 font-semibold"
+                    style={{ color: t.text }}
+                  >
+                    Email
+                  </Text>
+                  <TextInput
+                    className="w-full rounded-2xl px-5 py-4"
+                    style={{
+                      borderWidth: 2,
+                      borderColor: t.tabBarBorder,
+                      backgroundColor: t.cardBg,
+                      color: t.text,
+                      fontSize: 16,
+                      shadowColor: t.primary,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 8,
+                      elevation: 4,
+                    }}
+                    placeholder="Nhập email..."
+                    placeholderTextColor={t.textMuted}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                    }}
+                  />
+                </View>
+
+                <View
+                  className={`${
+                    isWeb
+                      ? isDesktop
+                        ? "w-full max-w-[500px]"
+                        : isTablet
+                          ? "w-[70%] max-w-[500px]"
+                          : "w-[85%] max-w-[500px]"
+                      : "w-[85%] max-w-[500px]"
+                  }`}
+                >
+                  <Text
+                    className="w-full text-sm mb-2 font-semibold"
+                    style={{ color: t.text }}
+                  >
+                    Mật khẩu
+                  </Text>
+                  <TextInput
+                    className="w-full rounded-2xl px-5 py-4"
+                    style={{
+                      borderWidth: 2,
+                      borderColor: t.tabBarBorder,
+                      backgroundColor: t.cardBg,
+                      color: t.text,
+                      fontSize: 16,
+                      shadowColor: t.primary,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 8,
+                      elevation: 4,
+                    }}
+                    placeholder="Nhập mật khẩu..."
+                    placeholderTextColor={t.textMuted}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                    }}
+                    secureTextEntry={true}
+                  />
+                </View>
+
+                <View
+                  className={`${
+                    isWeb
+                      ? isDesktop
+                        ? "w-full max-w-[500px]"
+                        : isTablet
+                          ? "w-[70%] max-w-[500px]"
+                          : "w-[85%] max-w-[500px]"
+                      : "w-[85%] max-w-[500px]"
+                  }`}
+                >
+                  <Text
+                    className="w-full text-sm mb-2 font-semibold"
+                    style={{ color: t.text }}
+                  >
+                    Nhập lại mật khẩu
+                  </Text>
+                  <TextInput
+                    className="w-full rounded-2xl px-5 py-4"
+                    style={{
+                      borderWidth: 2,
+                      borderColor: t.tabBarBorder,
+                      backgroundColor: t.cardBg,
+                      color: t.text,
+                      fontSize: 16,
+                      shadowColor: t.primary,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 8,
+                      elevation: 4,
+                    }}
+                    placeholder="Nhập lại mật khẩu..."
+                    placeholderTextColor={t.textMuted}
+                    onChangeText={(text) => {
+                      setConfirmPassword(text);
+                    }}
+                    secureTextEntry={true}
+                  />
+                </View>
+
+                <View
+                  className={`${
+                    isWeb
+                      ? isDesktop
+                        ? "w-full max-w-[500px]"
+                        : isTablet
+                          ? "w-[70%] max-w-[500px]"
+                          : "w-[85%] max-w-[500px]"
+                      : "w-[85%] max-w-[500px]"
+                  }`}
+                >
+                  <View className="w-full flex items-center flex-row gap-2">
+                    <Checkbox
+                      value={isChecked}
+                      onValueChange={setChecked}
+                      style={{ width: 18, height: 18 }}
+                      color={t.primary}
+                    />
+                    <Pressable
+                      onPress={() => {
+                        isChecked ? setChecked(false) : setChecked(true);
+                      }}
+                      className="flex-1 flex-row flex-wrap"
+                    >
+                      <Text className="text-sm" style={{ color: t.textMuted }}>
+                        Bạn đồng ý với tất cả các{" "}
+                      </Text>
+                      <Text
+                        className="text-sm font-semibold"
+                        style={{ color: t.primary }}
+                      >
+                        điều khoản
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                <Pressable
+                  onPress={() => {
+                    signUpFunction();
+                  }}
+                  className={`${
+                    isWeb
+                      ? isDesktop
+                        ? "w-full max-w-[500px]"
+                        : isTablet
+                          ? "w-[70%] max-w-[500px]"
+                          : "w-[85%] max-w-[500px]"
+                      : "w-[85%] max-w-[500px]"
+                  } flex flex-row gap-5 justify-center items-center rounded-full ${
+                    isWeb && isDesktop ? "py-5" : "py-4"
+                  } mt-2 overflow-hidden`}
+                  style={{
+                    shadowColor: t.primary,
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 16,
+                    elevation: 12,
+                  }}
+                >
+                  <LinearGradient
+                    colors={t.buttonGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      width: "100%",
+                      paddingVertical: isWeb && isDesktop ? 20 : 16,
+                      borderRadius: 9999,
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <Text className="text-white text-sm">
-                      {" "}
-                      Bạn đồng ý với tất cả các{" "}
+                    <Text
+                      className="text-base font-bold"
+                      style={{ color: t.surface, letterSpacing: 0.8 }}
+                    >
+                      Đăng ký
                     </Text>
-                  </Pressable>
-                  <Pressable>
-                    <Text className="text-red-500 text-sm">điều khoản</Text>
+                  </LinearGradient>
+                </Pressable>
+
+                <View className="flex flex-row mt-4">
+                  <Text className="text-sm" style={{ color: t.textMuted }}>
+                    Bạn đã có tài khoản?{" "}
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      router.push("/login");
+                    }}
+                  >
+                    <Text
+                      className="text-sm font-bold"
+                      style={{ color: t.primary }}
+                    >
+                      Đăng nhập
+                    </Text>
                   </Pressable>
                 </View>
               </View>
+            </View>
 
-              <Pressable
-                onPress={() => {
-                  signUpFunction();
-                }}
-                className="bg-white w-[80%] max-w-[500px] flex flex-row gap-5 justify-center items-center rounded-full py-3 hover:bg-[#f0e5e5] active:bg-[#e5d6d6]"
-              >
-                <Text className="text-base font-semibold">Đăng ký</Text>
-              </Pressable>
-
-              <View className="flex flex-row mt-3">
-                <Text className="text-white">Bạn đã có tài khoản? </Text>
-                <Pressable
-                  onPress={() => {
-                    router.push("/login");
-                  }}
-                >
-                  <Text className="text-blue-300 font-semibold">Đăng nhập</Text>
-                </Pressable>
+            <View className="w-full flex flex-row justify-between items-center">
+              <View className="w-fit">
+                <ArrowLeft size={30} color={"transparent"} />
+              </View>
+              <View className="w-fit">
+                <ArrowLeft size={30} color={"transparent"} />
               </View>
             </View>
           </View>
-
-          {/* Section 3 -- hidden */}
-          <View className="w-full flex flex-row justify-between items-center">
-            <View className="w-fit">
-              <ArrowLeft size={30} color={"rgba(255,255,255,0)"} />
-            </View>
-            <View className="w-fit">
-              <ArrowLeft size={30} color={"rgba(255,255,255,0)"} />
-            </View>
-          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
