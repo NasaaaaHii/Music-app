@@ -9,17 +9,20 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
+import { t } from "../theme";
 
 interface ButtonAnimationProps {
   item: string;
   onPress: () => void;
+  isActive?: boolean;
 }
 
-const ButtonAnimation: React.FC<ButtonAnimationProps> = ({ item, onPress }) => {
+const ButtonAnimation: React.FC<ButtonAnimationProps> = ({ item, onPress, isActive = false }) => {
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
-  const shadowOpacity = useSharedValue(0.1);
-  const elevation = useSharedValue(2);
+  const shadowOpacity = useSharedValue(isActive ? 0.3 : 0.1);
+  const elevation = useSharedValue(isActive ? 4 : 2);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -37,7 +40,7 @@ const ButtonAnimation: React.FC<ButtonAnimationProps> = ({ item, onPress }) => {
 
   const containerAnimatedStyle = useAnimatedStyle(() => {
     return {
-      shadowColor: "#3b82f6",
+      shadowColor: isActive ? t.primary : "#000",
       shadowOffset: {
         width: 0,
         height: interpolate(scale.value, [0.85, 1], [1, 4], Extrapolate.CLAMP),
@@ -81,15 +84,45 @@ const ButtonAnimation: React.FC<ButtonAnimationProps> = ({ item, onPress }) => {
   return (
     <Animated.View style={[containerAnimatedStyle]}>
       <Animated.View style={[animatedStyle, styles.button]}>
-        <TouchableOpacity
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={onPress}
-          className="rounded-full px-5 py-3 bg-gray-100"
-          activeOpacity={1}
-        >
-          <Text className="text-sm text-gray-800 font-semibold">{item}</Text>
-        </TouchableOpacity>
+        {isActive ? (
+          <LinearGradient
+            colors={t.buttonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 9999,
+              shadowColor: t.primary,
+              shadowOpacity: 0.5,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <TouchableOpacity
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              onPress={onPress}
+              className="rounded-full px-5 py-3"
+              activeOpacity={1}
+            >
+              <Text className="text-sm font-semibold" style={{ color: t.surface }}>{item}</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        ) : (
+          <TouchableOpacity
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            onPress={onPress}
+            className="rounded-full px-5 py-3"
+            style={{
+              backgroundColor: t.cardBg,
+              borderWidth: 1.5,
+              borderColor: t.tabBarBorder,
+            }}
+            activeOpacity={1}
+          >
+            <Text className="text-sm font-semibold" style={{ color: t.text }}>{item}</Text>
+          </TouchableOpacity>
+        )}
       </Animated.View>
     </Animated.View>
   );

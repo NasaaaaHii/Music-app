@@ -14,11 +14,10 @@ type MusicCardProps = {
     title: string;
     image?: ImageSourcePropType | string;
     artist?: string;
-    list?: string;
+    list?: string[];
     year?: string;
     follow?: string;
     musicArtist?: string[];
-    slogan?: string;
   };
   variant?:
     | "default"
@@ -44,7 +43,16 @@ export default function MusicCard({
 
   if (variant == "artistsBoard") {
     return (
-      <View className="bg-white rounded-2xl p-4 flex flex-row items-center justify-between border border-gray-200">
+      <View className="rounded-2xl p-4 flex flex-row items-center justify-between" style={{ 
+        backgroundColor: t.cardBg, 
+        borderColor: t.tabBarBorder, 
+        borderWidth: 1.5,
+        shadowColor: t.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+      }}>
         <View className="flex flex-row items-center gap-4 flex-1">
           <Image
             className="rounded-full"
@@ -56,10 +64,10 @@ export default function MusicCard({
             }}
           />
           <View className="flex-1">
-            <Text className="font-bold text-lg text-gray-900">
+            <Text className="font-bold text-lg" style={{ color: t.text }}>
               {item.title}
             </Text>
-            <Text className="text-gray-500 text-sm mt-1">
+            <Text className="text-sm mt-1" style={{ color: t.textMuted }}>
               {item.follow} người nghe
             </Text>
           </View>
@@ -76,7 +84,7 @@ export default function MusicCard({
               onPress={() => setIsFollow(false)}
               activeOpacity={0.8}
             >
-              <Text className="font-bold text-sm" style={{ color: "#001018" }}>
+              <Text className="font-bold text-sm" style={{ color: t.surface }}>
                 Đang theo dõi
               </Text>
             </TouchableOpacity>
@@ -84,10 +92,11 @@ export default function MusicCard({
         ) : (
           <TouchableOpacity
             className="px-6 py-2 rounded-full border-2"
+            style={{ borderColor: t.primary }}
             onPress={() => setIsFollow(!isFollow)}
             activeOpacity={0.7}
           >
-            <Text className="font-bold text-sm">Theo dõi</Text>
+            <Text className="font-bold text-sm" style={{ color: t.text }}>Theo dõi</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -119,8 +128,16 @@ export default function MusicCard({
   if (variant === "withList") {
     return (
       <View
-        className="mr-4 rounded-lg overflow-hidden"
-        style={{ width: 140, backgroundColor: t.cardBg }}
+        className="mr-4 rounded-xl overflow-hidden"
+        style={{ 
+          width: 140, 
+          backgroundColor: t.cardBg,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
       >
         <Image
           source={imageSource}
@@ -138,12 +155,21 @@ export default function MusicCard({
       </View>
     );
   }
-
+  console.log(item.list);
+  console.log(item.id);
   if (variant === "albumBoard") {
     return (
       <View
-        className="mr-4 rounded-lg overflow-hidden"
-        style={{ width: 120, backgroundColor: t.cardBg }}
+        className="mr-4 rounded-xl overflow-hidden"
+        style={{ 
+          width: 120, 
+          backgroundColor: t.cardBg,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
       >
         <Image
           source={imageSource}
@@ -156,9 +182,6 @@ export default function MusicCard({
             numberOfLines={1}
           >
             {item.title}
-          </Text>
-          <Text style={{ color: t.textMuted, fontSize: 11 }} numberOfLines={1}>
-            {(item.artist || "") + (item.year ? " • " + item.year : "")}
           </Text>
         </View>
       </View>

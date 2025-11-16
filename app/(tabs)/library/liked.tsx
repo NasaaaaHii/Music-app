@@ -29,6 +29,7 @@ import {
 } from "../../../config/firebaseConfig";
 import { getTrack, getTrackStreamUrl } from "../../../config/musicApi";
 import MusicEqualizer from "../../Components/MusicEqualizer";
+import { t } from "../../theme";
 
 export default function PlayLists() {
   type Track = {
@@ -108,8 +109,8 @@ export default function PlayLists() {
         })
       );
 
-      console.log(newData)
-      setDBLiked(newData)
+      console.log(newData);
+      setDBLiked(newData);
     } catch (e) {
       const err = e as Error;
       console.log(err.message);
@@ -149,13 +150,16 @@ export default function PlayLists() {
 
   if (loadingPage)
     return (
-      <View className="flex-1 bg-purple-900 justify-center items-center">
-        <ActivityIndicator size={"large"} color="white" />
+      <View
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: t.surface }}
+      >
+        <ActivityIndicator size={"large"} color={t.primary} />
       </View>
     );
   if (!valid) return <Redirect href="/" />;
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: t.surface }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="w-full flex flex-col items-center gap-6">
           <View className="w-full">
@@ -164,32 +168,46 @@ export default function PlayLists() {
                 <Feather
                   name="arrow-left"
                   size={24}
-                  color="#1c1c1c"
+                  color={t.text}
                   className="p-4"
                 />
               </Pressable>
               <View className="flex flex-row justify-center items-center h-full">
-                <Text className="text-xl font-semibold">Danh mục</Text>
+                <Text
+                  className="text-xl font-semibold"
+                  style={{ color: t.text }}
+                >
+                  Danh mục
+                </Text>
               </View>
               <Pressable onPress={() => router.back()} className="w-fit">
                 <Feather
                   name="more-vertical"
                   size={24}
-                  color="#1c1c1c"
+                  color={t.text}
                   className="p-4"
                 />
               </Pressable>
             </View>
           </View>
-            <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl p-20">
-              <Heart size={100} color={"#d0cfd5"} />
-            </View>
+          <View
+            className="flex flex-row justify-center items-center rounded-xl p-20"
+            style={{ backgroundColor: t.cardBg }}
+          >
+            <Heart size={100} color={t.textMuted} />
+          </View>
           <View>
-            <Text className="font-semibold text-xl text-center">
+            <Text
+              className="font-semibold text-xl text-center"
+              style={{ color: t.text }}
+            >
               {"Yêu thích"}
             </Text>
-            <Text className="text-gray-500 text-base text-center">
-              {DBLiked.length} bài hát
+            <Text
+              className="text-base text-center"
+              style={{ color: t.textMuted }}
+            >
+              {DBLiked?.length || 0} bài hát
             </Text>
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">
@@ -208,8 +226,10 @@ export default function PlayLists() {
                 // setIsPlaying(1)
               }}
             >
-              <CircleArrowRight size={24} strokeWidth={1.5} color={"#000"} />
-              <Text className="text-sm">Bài kế</Text>
+              <CircleArrowRight size={24} strokeWidth={1.5} color={t.text} />
+              <Text className="text-sm" style={{ color: t.textMuted }}>
+                Bài kế
+              </Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -221,7 +241,10 @@ export default function PlayLists() {
                 //   setIsPlaying(1 - isPlaying)
                 // }
               }}
-              className={`${true ? "bg-[#8546ec]" : "bg-gray-300"} px-7 py-3 rounded-full`}
+              className="px-7 py-3 rounded-full"
+              style={{
+                backgroundColor: DBLiked?.length > 0 ? t.primary : t.textMuted,
+              }}
             >
               <Text className="text-white text-lg font-semibold">
                 {isPlaying === 0 ? "Phát nhạc" : "Tạm dừng"}
@@ -238,15 +261,17 @@ export default function PlayLists() {
                 // });
               }}
             >
-              <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />
-              <Text className="text-sm">Thêm bài</Text>
+              <CirclePlus size={24} strokeWidth={1.5} color={t.text} />
+              <Text className="text-sm" style={{ color: t.textMuted }}>
+                Thêm bài
+              </Text>
             </Pressable>
           </View>
 
           {/* Main */}
           <View className="w-full pb-80">
             {loading && (
-              <Text className="text-gray-400 text-center">
+              <Text className="text-center" style={{ color: t.textMuted }}>
                 Đang tải bài hát...
               </Text>
             )}
@@ -260,7 +285,13 @@ export default function PlayLists() {
               }}
               renderItem={({ item, index }) => (
                 <View
-                  className={`flex flex-row items-center p-3 ${urlMusicPlaying === item.url ? "bg-gray-100" : ""} `}
+                  className={`flex flex-row items-center p-3 rounded-lg`}
+                  style={{
+                    backgroundColor:
+                      urlMusicPlaying === item.url
+                        ? t.cardHover
+                        : "transparent",
+                  }}
                 >
                   <Pressable
                     // onPress={() => {
@@ -283,7 +314,7 @@ export default function PlayLists() {
                     {urlMusicPlaying === item.url && (
                       <View className="absolute top-0 bottom-0 right-0 left-0 felx justify-center items-center">
                         {isPlaying === 0 ? (
-                          <Pause size={40} />
+                          <Pause size={40} color={t.text} />
                         ) : (
                           <MusicEqualizer />
                         )}
@@ -291,30 +322,42 @@ export default function PlayLists() {
                     )}
                   </Pressable>
                   <View className="flex-1 mx-3">
-                    <Text className="font-semibold text-base">
+                    <Text
+                      className="font-semibold text-base"
+                      style={{ color: t.text }}
+                    >
                       {item.title}
                     </Text>
-                    <Text className="text-sm text-gray-500">
+                    <Text className="text-sm" style={{ color: t.textMuted }}>
                       {item.artists.join(", ")}
                     </Text>
                   </View>
                   <View className="flex flex-row items-center gap-1">
-                    <Pressable onPress={() => {
-                      const newData = [...DBLiked]
-                      newData.splice(index, 1)
-                      setDBLiked(newData)
-                      likedBUS.deleteLiked(FIREBASE_AUTH.currentUser?.uid!, item.id)
-                      loadDB()
-                      DeviceEventEmitter.emit("playlistStatus", "success");
-                    }}>
+                    <Pressable
+                      onPress={() => {
+                        const newData = [...DBLiked];
+                        newData.splice(index, 1);
+                        setDBLiked(newData);
+                        likedBUS.deleteLiked(
+                          FIREBASE_AUTH.currentUser?.uid!,
+                          item.id
+                        );
+                        loadDB();
+                        DeviceEventEmitter.emit("playlistStatus", "success");
+                      }}
+                    >
                       <Heart
                         width={22}
                         strokeWidth={1.5}
-                        fill={"#f9448d"}
-                        color={"#f9448d"}
+                        fill={t.primary}
+                        color={t.primary}
                       />
                     </Pressable>
-                    <EllipsisVertical width={22} strokeWidth={1.5} />
+                    <EllipsisVertical
+                      width={22}
+                      strokeWidth={1.5}
+                      color={t.text}
+                    />
                   </View>
                 </View>
               )}

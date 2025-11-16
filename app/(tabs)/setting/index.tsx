@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { Redirect } from "expo-router";
 import {
   Bell,
@@ -6,7 +7,7 @@ import {
   Moon,
   Music,
   Trash,
-  User,
+  UserRound,
 } from "lucide-react-native";
 import { Dialog, Portal, Provider, Text, TextInput } from "react-native-paper";
 
@@ -22,6 +23,7 @@ import {
   Button,
   Pressable,
   ScrollView,
+  Switch,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -36,11 +38,15 @@ import { t } from "../../theme";
 type Mode = "Light" | "Dark";
 export default function Setting() {
   const [isDarkMode, setIsDarkMode] = useState<Mode>("Dark");
-  const [isNotification, setIsNotification] = useState(false);
+  const [isNotification, setIsNotification] = useState(true);
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
   const [visible, setVisible] = useState(false);
   const [password, setPassword] = useState("");
+  const [userInfo, setUserInfo] = useState<{ name: string; email: string }>({
+    name: "",
+    email: "",
+  });
 
   async function signOutFunction() {
     try {
@@ -80,6 +86,10 @@ export default function Setting() {
       const f = await onAuthStateChanged(FIREBASE_AUTH, async (user) => {
         if (user && user.emailVerified) {
           setValid(user);
+          setUserInfo({
+            name: user.displayName || user.email?.split("@")[0] || "Người dùng",
+            email: user.email || "",
+          });
         }
         setLoadingPage(false);
       });
@@ -133,175 +143,251 @@ export default function Setting() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-      <ScrollView className="flex-1" style={{ backgroundColor: t.tabBarBg }}>
-        <View className="px-5 pt-16 pb-6 mb-24">
-          <View className="flex flex-col justify-center gap-4 items-center">
+      <ScrollView
+        className="flex-1"
+        style={{ backgroundColor: t.surface }}
+        contentContainerStyle={{ padding: 32, paddingBottom: 160 }}
+      >
+        <View
+          style={{
+            backgroundColor: "rgba(255,255,255,0.02)",
+            borderRadius: 24,
+            padding: 32,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.05)",
+          }}
+        >
+          <View className="flex-row items-center gap-4">
             <View
-              className="rounded-full shadow-lg p-10 "
-              style={{ backgroundColor: t.primaryDark }}
+              className="w-16 h-16 rounded-2xl items-center justify-center"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+              }}
             >
-              <Music color={t.text} size={48} strokeWidth={2.5} />
+              <Music color={t.primary} size={36} strokeWidth={2.5} />
             </View>
-            <Text className="text-4xl font-bold pt-4" style={{ color: t.text }}>
-              Cài đặt
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: t.text, fontSize: 24, fontWeight: "700" }}>
+                Xin chào, {userInfo.name}
+              </Text>
+              <Text style={{ color: t.textMuted }}>{userInfo.email}</Text>
+            </View>
           </View>
-          <View className="flex flex-col gap-4 pt-8">
-            <Text className="text-xl font-bold" style={{ color: t.text }}>
-              Tài khoản
-            </Text>
-            <View
-              className="flex flex-row justify-between items-center gap-4 rounded-2xl p-3"
-              style={{ backgroundColor: t.primary }}
-            >
-              <View className="flex flex-row gap-4">
+          <TouchableOpacity
+            onPress={signOutFunction}
+            style={{
+              marginTop: 16,
+              paddingVertical: 12,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.1)",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: t.text, fontWeight: "600" }}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View className="mt-8 gap-4">
+          <Text
+            style={{
+              color: t.text,
+              fontSize: 18,
+              fontWeight: "700",
+              letterSpacing: 0.3,
+            }}
+          >
+            Cá nhân hóa
+          </Text>
+
+          <View
+            style={{
+              backgroundColor: t.cardBg,
+              borderRadius: 20,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.05)",
+            }}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-3 flex-1">
                 <View
-                  className="p-4 rounded-full"
-                  style={{ backgroundColor: t.surface }}
+                  className="p-3 rounded-2xl"
+                  style={{ backgroundColor: t.cardHover }}
                 >
-                  <User size={22} color={t.primary} strokeWidth={2.5} />
+                  <Moon color={t.primary} size={20} strokeWidth={2.5} />
                 </View>
-                <View className="flex flex-col gap-1">
+                <View>
                   <Text
-                    className="text-lg font-bold"
-                    style={{ color: t.surface }}
+                    style={{
+                      color: t.text,
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
                   >
-                    Tên User
+                    Chế độ giao diện
                   </Text>
-                  <Text
-                    className="text-md font-normal"
-                    style={{ color: t.surface }}
-                  >
-                    Tên tài khoản
+                  <Text style={{ color: t.textMuted }}>
+                    {isDarkMode === "Dark"
+                      ? "Đang sử dụng Dark mode"
+                      : "Đang sử dụng Light mode"}
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity
-                className="px-4 py-2 rounded-lg bg-red-500"
-                onPress={() => {
-                  signOutFunction();
-                }}
-              >
-                <Text className="text-md font-bold" style={{ color: t.text }}>
-                  Đăng xuất
-                </Text>
-              </TouchableOpacity>
+              <View className="flex-row items-center gap-2">
+                <Text style={{ color: t.textMuted, fontSize: 12 }}>Light</Text>
+                <Switch
+                  value={isDarkMode === "Dark"}
+                  onValueChange={() =>
+                    setIsDarkMode((prev) =>
+                      prev === "Dark" ? "Light" : "Dark"
+                    )
+                  }
+                  trackColor={{ false: "#9CA3AF", true: t.primary }}
+                  thumbColor={t.surface}
+                />
+                <Text style={{ color: t.textMuted, fontSize: 12 }}>Dark</Text>
+              </View>
             </View>
           </View>
 
-          <View className="flex flex-col gap-4 pt-8">
-            <Text className="text-xl font-bold" style={{ color: t.text }}>
-              Màu giao diện
-            </Text>
-            <View
-              className="flex flex-row justify-between items-center gap-4 rounded-2xl p-3"
-              style={{ backgroundColor: t.primary }}
-            >
-              <View className="flex flex-row gap-4">
+          <View
+            style={{
+              backgroundColor: t.cardBg,
+              borderRadius: 20,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.05)",
+            }}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-3 flex-1">
                 <View
-                  className="p-4 rounded-full"
-                  style={{ backgroundColor: t.surface }}
-                >
-                  <Moon size={22} color={t.primary} strokeWidth={2.5} />
-                </View>
-                <View className="flex flex-col gap-1">
-                  <Text
-                    className="text-lg font-bold"
-                    style={{ color: t.surface }}
-                  >
-                    {isDarkMode === "Dark" ? "Dark Mode" : "Light Mode"}
-                  </Text>
-                  <Text
-                    className="text-md font-normal"
-                    style={{ color: t.surface }}
-                  >
-                    Chuyển chế độ sáng tối
-                  </Text>
-                </View>
-                <TouchableOpacity></TouchableOpacity>
-              </View>
-            </View>
-          </View>
-          <View className="flex flex-col pt-8">
-            <Text className="text-xl font-bold" style={{ color: t.text }}>
-              Thông tin
-            </Text>
-            <View
-              className="flex flex-row justify-between items-center gap-4 rounded-t-2xl p-3"
-              style={{ backgroundColor: t.primary }}
-            >
-              <View className="flex flex-row gap-4">
-                <View
-                  className="p-4 rounded-full"
-                  style={{ backgroundColor: t.surface }}
+                  className="p-3 rounded-2xl"
+                  style={{ backgroundColor: t.cardHover }}
                 >
                   {isNotification ? (
-                    <BellRing size={22} color={t.primary} strokeWidth={2.5} />
+                    <BellRing color={t.primary} size={20} strokeWidth={2.5} />
                   ) : (
-                    <Bell size={22} color={t.primary} strokeWidth={2.5} />
+                    <Bell color={t.primary} size={20} strokeWidth={2.5} />
                   )}
                 </View>
-                <View className="flex flex-col gap-1">
+                <View>
                   <Text
-                    className="text-lg font-bold"
-                    style={{ color: t.surface }}
+                    style={{
+                      color: t.text,
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
                   >
-                    Thông báo
+                    Thông báo mới
                   </Text>
-                  <Text
-                    className="text-md font-normal"
-                    style={{ color: t.surface }}
-                  >
-                    Thông báo khi có nhạc mới
+                  <Text style={{ color: t.textMuted }}>
+                    Nhận thông báo khi có playlist hot
                   </Text>
                 </View>
-                <TouchableOpacity></TouchableOpacity>
               </View>
-            </View>
-            <View
-              className="flex flex-row justify-between items-center gap-4 rounded-b-2xl p-3"
-              style={{ backgroundColor: t.primary }}
-            >
-              <View className="flex flex-row gap-4">
-                <View
-                  className="p-4 rounded-full"
-                  style={{ backgroundColor: t.surface }}
-                >
-                  <Info size={22} color={t.primary} strokeWidth={2.5} />
-                </View>
-                <View className="flex flex-col gap-1">
-                  <Text
-                    className="text-lg font-bold"
-                    style={{ color: t.surface }}
-                  >
-                    Phiên bản
-                  </Text>
-                  <Text
-                    className="text-md font-normal"
-                    style={{ color: t.surface }}
-                  >
-                    Music App v1.0.0
-                  </Text>
-                </View>
-                <TouchableOpacity></TouchableOpacity>
-              </View>
-            </View>
-            <View className="flex flex-col gap-4 pt-8">
-              <Pressable
-                onPress={() => {
-                  showDialog();
-                }}
-              >
-                <View className="flex flex-row justify-center items-center gap-4 rounded-2xl p-3 bg-red-700">
-                  <Trash size={24} color={t.text} strokeWidth={2.5} />
-                  <Text className="text-xl font-bold" style={{ color: t.text }}>
-                    Xóa tài khoản
-                  </Text>
-                </View>
-              </Pressable>
+              <Switch
+                value={isNotification}
+                onValueChange={setIsNotification}
+                trackColor={{ false: "#9CA3AF", true: t.primary }}
+                thumbColor={t.surface}
+              />
             </View>
           </View>
         </View>
+
+        <View className="mt-8 gap-4">
+          <Text
+            style={{
+              color: t.text,
+              fontSize: 18,
+              fontWeight: "700",
+              letterSpacing: 0.3,
+            }}
+          >
+            Thông tin ứng dụng
+          </Text>
+          <View
+            style={{
+              backgroundColor: t.cardBg,
+              borderRadius: 20,
+              padding: 16,
+              gap: 16,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.05)",
+            }}
+          >
+            <View className="flex-row items-center gap-3">
+              <View
+                className="p-3 rounded-2xl"
+                style={{ backgroundColor: t.cardHover }}
+              >
+                <Info color={t.primary} size={20} strokeWidth={2.5} />
+              </View>
+              <View>
+                <Text
+                  style={{
+                    color: t.text,
+                    fontWeight: "600",
+                    fontSize: 16,
+                  }}
+                >
+                  Phiên bản
+                </Text>
+                <Text style={{ color: t.textMuted }}>Music App v1.0.0</Text>
+              </View>
+            </View>
+            <View className="flex-row items-center gap-3">
+              <View
+                className="p-3 rounded-2xl"
+                style={{ backgroundColor: t.cardHover }}
+              >
+                <UserRound color={t.primary} size={20} strokeWidth={2.5} />
+              </View>
+              <View>
+                <Text
+                  style={{
+                    color: t.text,
+                    fontWeight: "600",
+                    fontSize: 16,
+                  }}
+                >
+                  Cập nhật cuối
+                </Text>
+                <Text style={{ color: t.textMuted }}>15/11/2025</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <Pressable onPress={showDialog} className="mt-10">
+          <LinearGradient
+            colors={["#F43F5E", "#BE123C"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 20,
+              paddingVertical: 18,
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "row",
+              gap: 10,
+            }}
+          >
+            <Trash size={20} color="#fff" strokeWidth={2.5} />
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "700",
+                fontSize: 16,
+                letterSpacing: 0.5,
+              }}
+            >
+              Xóa tài khoản
+            </Text>
+          </LinearGradient>
+        </Pressable>
       </ScrollView>
     </Provider>
   );
