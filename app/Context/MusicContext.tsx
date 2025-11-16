@@ -1,3 +1,4 @@
+import { Audio } from "expo-av";
 import {
   createContext,
   ReactNode,
@@ -55,8 +56,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [url, setUrl] = useState<string | null>("");
   const [isLoadingTrack, setIsLoadingTrack] = useState(false);
-  const playerRef = useRef<HTMLAudioElement | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
   const [duration, setDuration] = useState(0);
   const [process, setProcess] = useState(0);
   const currentRequestRef = useRef<{
@@ -64,116 +64,64 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     cancelled: boolean;
   } | null>(null);
   useEffect(() => {
-    const audio = audioRef.current;
-    const player = playerRef.current;
+    const sound = soundRef.current;
+    if (!sound) return;
 
-    if (!audio || !player) {
-      return;
-    }
-    const updateProcess = () => {
-      const currentTime = audio.currentTime || player.currentTime;
-      if (!isNaN(currentTime) && isFinite(currentTime)) {
-        setProcess(currentTime);
-      }
-    };
-    const updateDuration = () => {
-      const duration = audio.duration || player.duration;
-      if (!isNaN(duration) && isFinite(duration) && duration > 0) {
-        setDuration(duration);
-        if (process > duration) {
-          setProcess(0);
+    const updateStatus = async () => {
+      try {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          if (status.positionMillis !== undefined) {
+            setProcess(status.positionMillis / 1000);
+          }
+          if (
+            status.durationMillis !== undefined &&
+            status.durationMillis > 0
+          ) {
+            setDuration(status.durationMillis / 1000);
+          }
+          setIsPlaying(status.isPlaying || false);
         }
+      } catch (error) {
+        console.error("Error updating status:", error);
       }
     };
-    const handleEnded = () => {
-      setIsPlaying(false);
-      setProcess(0);
-    };
-    const handleCanPlay = () => {
-      if (audio && !isNaN(audio.duration)) {
-        setDuration(audio.duration);
-      }
-    };
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
 
-    audio.addEventListener("timeupdate", updateProcess);
-    audio.addEventListener("loadedmetadata", updateDuration);
-    audio.addEventListener("loadeddata", updateDuration);
-    audio.addEventListener("canplay", handleCanPlay);
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
-
-    player.addEventListener("timeupdate", updateProcess);
-    player.addEventListener("loadedmetadata", updateDuration);
-    player.addEventListener("loadeddata", updateDuration);
-    player.addEventListener("canplay", handleCanPlay);
-    player.addEventListener("ended", handleEnded);
+    const interval = setInterval(updateStatus, 100);
 
     return () => {
-      audio.removeEventListener("timeupdate", updateProcess);
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("loadeddata", updateDuration);
-      audio.removeEventListener("canplay", handleCanPlay);
-      audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
-
-      player.removeEventListener("timeupdate", updateProcess);
-      player.removeEventListener("loadedmetadata", updateDuration);
-      player.removeEventListener("loadeddata", updateDuration);
-      player.removeEventListener("canplay", handleCanPlay);
-      player.removeEventListener("ended", handleEnded);
+      clearInterval(interval);
     };
   }, [url]);
   useEffect(() => {
-    if (!playerRef.current) {
-      playerRef.current = new Audio();
-    }
     return () => {
-      playerRef.current?.pause();
-      playerRef.current = null;
+      soundRef.current?.unloadAsync();
+      soundRef.current = null;
     };
   }, []);
   const play = async () => {
     try {
-      const player = playerRef.current;
-      const audio = audioRef.current;
-
-      if (player && audio) {
-        await Promise.all([player.play(), audio.play()]);
-      } else if (player) {
-        await player.play();
-      } else if (audio) {
-        await audio.play();
+      const sound = soundRef.current;
+      if (sound) {
+        await sound.playAsync();
+        setIsPlaying(true);
       }
-
-      setIsPlaying(true);
     } catch (error) {
       console.error("Play error:", error);
     }
   };
   const pause = async () => {
-    const player = playerRef.current;
-    const audio = audioRef.current;
-
-    if (player) {
-      player.pause();
+    try {
+      const sound = soundRef.current;
+      if (sound) {
+        await sound.pauseAsync();
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error("Pause error:", error);
     }
-    if (audio) {
-      audio.pause();
-    }
-
-    setIsPlaying(false);
   };
   const replace = async (newUrl: string, requestId?: string) => {
-    if (!playerRef.current || !audioRef.current) return;
-
     if (requestId && currentRequestRef.current) {
       if (
         currentRequestRef.current.cancelled ||
@@ -184,56 +132,46 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    const player = playerRef.current;
-    const audio = audioRef.current;
-
-    if (player.src !== newUrl || audio.src !== newUrl) {
-      player.pause();
-      audio.pause();
-
-      player.src = newUrl;
-      audio.src = newUrl;
-
-      player.load();
-      audio.load();
-    }
-
-    if (requestId && currentRequestRef.current) {
-      if (
-        currentRequestRef.current.cancelled ||
-        currentRequestRef.current.trackId !== requestId
-      ) {
-        console.log("Play cancelled for request:", requestId);
-        return;
-      }
-    }
-
     try {
-      await Promise.all([player.play(), audio.play()]);
-    } catch (error) {
-      console.error("Play error:", error);
-      try {
-        await player.play();
-      } catch (e) {
-        try {
-          await audio.play();
-        } catch (e2) {
-          console.error("Both audio elements failed to play");
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
+      }
+
+      // Load new sound
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: newUrl },
+        { shouldPlay: true }
+      );
+
+      soundRef.current = sound;
+
+      if (requestId && currentRequestRef.current) {
+        if (
+          currentRequestRef.current.cancelled ||
+          currentRequestRef.current.trackId !== requestId
+        ) {
+          console.log("Play cancelled for request:", requestId);
+          await sound.unloadAsync();
+          soundRef.current = null;
+          return;
         }
       }
+
+      setIsPlaying(true);
+    } catch (error) {
+      console.error("Replace error:", error);
     }
   };
-  const handleSeek = (value: number) => {
-    const audio = audioRef.current;
-    const player = playerRef.current;
-
-    if (audio && !isNaN(value)) {
-      audio.currentTime = value;
-      setProcess(value);
-    }
-
-    if (player && !isNaN(value)) {
-      player.currentTime = value;
+  const handleSeek = async (value: number) => {
+    try {
+      const sound = soundRef.current;
+      if (sound && !isNaN(value)) {
+        await sound.setPositionAsync(value * 1000);
+        setProcess(value);
+      }
+    } catch (error) {
+      console.error("Seek error:", error);
     }
   };
   const setCurrentTrack = async (
@@ -245,7 +183,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     if (currentRequestRef.current) {
       currentRequestRef.current.cancelled = true;
-      playerRef.current?.pause();
     }
 
     const requestId = track.id;
@@ -377,11 +314,20 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
       console.error("Prev track error:", error);
     }
   };
-  const clearPlayer = () => {
+  const clearPlayer = async () => {
     if (currentRequestRef.current) {
       currentRequestRef.current.cancelled = true;
     }
     currentRequestRef.current = null;
+
+    try {
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
+      }
+    } catch (error) {
+      console.error("Clear player error:", error);
+    }
 
     setTrack(null);
     setPlaylist([]);
@@ -389,10 +335,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     setIsPlaying(false);
     setIsLoadingTrack(false);
     setUrl(null);
-    playerRef.current?.pause();
-    if (playerRef.current) {
-      playerRef.current.src = "";
-    }
   };
   const hasNextTrack =
     playlist.length > 0 &&
@@ -425,7 +367,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-      <audio ref={audioRef} src={url ?? undefined} />
     </MusicContext.Provider>
   );
 };
