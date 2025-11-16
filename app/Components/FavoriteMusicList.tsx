@@ -59,8 +59,9 @@ export default function FavoriteMusicList({ searchContent, uid, plid }: Props){
             };
         })
     );
+    const filtered = newData.filter(item =>   item.title.toLowerCase().includes(searchContent.toLowerCase()))
 
-    setTracks(newData);
+    setTracks(filtered);
     setLoading(false);
   }
 
@@ -77,7 +78,7 @@ export default function FavoriteMusicList({ searchContent, uid, plid }: Props){
 
   useEffect(() => {
     loadDB();
-  }, []);
+  }, [searchContent]);
 
   useEffect(() => {
     if (!DBPlaylist || !DBLiked) return;

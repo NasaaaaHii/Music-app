@@ -53,9 +53,9 @@ export default function PlayLists() {
       setCurrUrl(urlMusicPlaying);
     }
 
-    if (isPlaying === 0) player.pause();
-    else player.play();
-  }, [urlMusicPlaying, isPlaying]);
+    // if (isPlaying === 0) player.pause();
+    // else player.play();
+  }, []);
 
   const [valid, setValid] = useState<any>(null);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -144,7 +144,18 @@ export default function PlayLists() {
           })();
       }
     );
-    return () => sub.remove();
+    
+    const sub2 = DeviceEventEmitter.addListener("changePlaylistName", (status) => {
+      if (status === "success")
+        (async () => {
+            await loadDB();
+        })();
+    });
+
+    return () => {
+      sub.remove();
+      sub2.remove();
+    };
   }, []);
 
   if (loadingPage)
@@ -196,7 +207,7 @@ export default function PlayLists() {
               {DBPlaylist.name}
             </Text>
             <Text className="text-gray-500 text-base text-center">
-              {DBPlaylist.songs.length} bài hát
+              {DBSongList.length} bài hát
             </Text>
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">
@@ -362,10 +373,9 @@ export default function PlayLists() {
 
                         const newData = [...DBSongList];
                         newData.splice(index, 1);
+                        setDBSongList(newData);
 
                         playlistBUS.deleteSongInPlaylist(uid, plid, songid);
-
-                        setDBSongList(newData);
                         DeviceEventEmitter.emit("playlistStatus", "success");
                       }}
                     >

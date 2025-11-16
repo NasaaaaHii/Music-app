@@ -92,9 +92,16 @@ export default function Index() {
           await loadDB(FIREBASE_AUTH.currentUser!.uid);
         })();
     });
+    const sub3 = DeviceEventEmitter.addListener("statusPlaylists", (status) => {
+      if (status === "success")
+        (async () => {
+          await loadDB(FIREBASE_AUTH.currentUser!.uid);
+        })();
+    });
     return () => {
       sub.remove();
       sub2.remove();
+      sub3.remove();
     };
   }, []);
 

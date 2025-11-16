@@ -1,11 +1,9 @@
-import { Feather } from "@expo/vector-icons";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import {
-  CircleArrowRight,
-  CirclePlus,
-  EllipsisVertical,
+  ArrowLeft,
   Heart,
   Pause,
+  Play
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -108,8 +106,8 @@ export default function PlayLists() {
         })
       );
 
-      console.log(newData)
-      setDBLiked(newData)
+      console.log(newData);
+      setDBLiked(newData);
     } catch (e) {
       const err = e as Error;
       console.log(err.message);
@@ -160,30 +158,24 @@ export default function PlayLists() {
         <View className="w-full flex flex-col items-center gap-6">
           <View className="w-full">
             <View className="flex flex-row justify-between gap-6">
-              <Pressable onPress={() => router.back()} className="w-fit">
-                <Feather
-                  name="arrow-left"
-                  size={24}
-                  color="#1c1c1c"
-                  className="p-4"
-                />
+              <Pressable onPress={() => router.back()} className="w-fit p-4">
+                <ArrowLeft size={24} color={"#1c1c1c"} strokeWidth={2} />
               </Pressable>
               <View className="flex flex-row justify-center items-center h-full">
                 <Text className="text-xl font-semibold">Danh mục</Text>
               </View>
-              <Pressable onPress={() => router.back()} className="w-fit">
-                <Feather
-                  name="more-vertical"
+              <View className="w-fit p-4">
+                <ArrowLeft
                   size={24}
-                  color="#1c1c1c"
-                  className="p-4"
+                  color={"#rgba(255,255,255,0)"}
+                  strokeWidth={2}
                 />
-              </Pressable>
+              </View>
             </View>
           </View>
-            <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl p-20">
-              <Heart size={100} color={"#d0cfd5"} />
-            </View>
+          <View className="flex flex-row justify-center items-center bg-[#f0eff4] rounded-xl p-20">
+            <Heart size={100} color={"#d0cfd5"} />
+          </View>
           <View>
             <Text className="font-semibold text-xl text-center">
               {"Yêu thích"}
@@ -194,52 +186,13 @@ export default function PlayLists() {
           </View>
           <View className="flex flex-row justify-centers gap-10 items-center">
             <Pressable
-              className="flex flex-col items-center"
               onPress={() => {
-                // if(posMusicPlaying === null){
-                //   setPosMusicPlaying(0)
-                //   setUrlMusicPlaying(DBSongList[0].url)
-                //   setIsPlaying(1 - isPlaying)
-                //   return
-                // }
-                // const pos = (posMusicPlaying + 1) % DBSongList.length
-                // setPosMusicPlaying(pos)
-                // setUrlMusicPlaying(DBSongList[pos].url)
-                // setIsPlaying(1)
+                if (DBLiked.length > 0) {
+                }
               }}
+              className={`${DBLiked.length > 0 ? "bg-[#8546ec]" : "bg-gray-300"} p-3 rounded-full`}
             >
-              <CircleArrowRight size={24} strokeWidth={1.5} color={"#000"} />
-              <Text className="text-sm">Bài kế</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                // if (DBSongList.length > 0) {
-                //   if(posMusicPlaying === null){
-                //     setPosMusicPlaying(0)
-                //     setUrlMusicPlaying(DBSongList[0].url)
-                //   }
-                //   setIsPlaying(1 - isPlaying)
-                // }
-              }}
-              className={`${true ? "bg-[#8546ec]" : "bg-gray-300"} px-7 py-3 rounded-full`}
-            >
-              <Text className="text-white text-lg font-semibold">
-                {isPlaying === 0 ? "Phát nhạc" : "Tạm dừng"}
-              </Text>
-            </Pressable>
-            <Pressable
-              className="flex flex-col items-center"
-              onPress={() => {
-                // router.push({
-                //   pathname: "/library/addMusic",
-                //   params: {
-                //     idPlaylists: params.idPlaylists,
-                //   },
-                // });
-              }}
-            >
-              <CirclePlus size={24} strokeWidth={1.5} color={"#000"} />
-              <Text className="text-sm">Thêm bài</Text>
+              <Play size={24} strokeWidth={2} color={"#fff"} />
             </Pressable>
           </View>
 
@@ -299,14 +252,18 @@ export default function PlayLists() {
                     </Text>
                   </View>
                   <View className="flex flex-row items-center gap-1">
-                    <Pressable onPress={() => {
-                      const newData = [...DBLiked]
-                      newData.splice(index, 1)
-                      setDBLiked(newData)
-                      likedBUS.deleteLiked(FIREBASE_AUTH.currentUser?.uid!, item.id)
-                      loadDB()
-                      DeviceEventEmitter.emit("playlistStatus", "success");
-                    }}>
+                    <Pressable
+                      onPress={() => {
+                        const newData = [...DBLiked];
+                        newData.splice(index, 1);
+                        setDBLiked(newData);
+                        likedBUS.deleteLiked(
+                          FIREBASE_AUTH.currentUser?.uid!,
+                          item.id
+                        );
+                        DeviceEventEmitter.emit("playlistStatus", "success");
+                      }}
+                    >
                       <Heart
                         width={22}
                         strokeWidth={1.5}
@@ -314,7 +271,6 @@ export default function PlayLists() {
                         color={"#f9448d"}
                       />
                     </Pressable>
-                    <EllipsisVertical width={22} strokeWidth={1.5} />
                   </View>
                 </View>
               )}

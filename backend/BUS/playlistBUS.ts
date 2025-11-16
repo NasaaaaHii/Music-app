@@ -51,8 +51,7 @@ const playlistBUS = {
 
   async updatePlaylist(idUser: string, idPL: string, name: string){
     try {
-      console.log(idUser, idPL, name)
-      // await playlistDAO.updatePlaylist(idUser, idPL, name);
+      await playlistDAO.updatePlaylist(idUser, idPL, name);
     } catch (error) {
       throw error;
     }

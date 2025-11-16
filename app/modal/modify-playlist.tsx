@@ -2,19 +2,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    DeviceEventEmitter,
-    Pressable,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  DeviceEventEmitter,
+  Pressable,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import playlistBUS from "../../backend/BUS/playlistBUS";
 import {
-    FIREBASE_AUTH,
-    getError,
-    onAuthStateChanged,
+  FIREBASE_AUTH,
+  getError,
+  onAuthStateChanged,
 } from "../../config/firebaseConfig";
 
 export default function ModifyPlayList() {
