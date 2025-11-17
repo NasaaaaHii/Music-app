@@ -59,7 +59,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
   const soundRef = useRef<Audio.Sound | null>(null);
   const [duration, setDuration] = useState(0);
   const [process, setProcess] = useState(0);
-  const [soundLoaded, setSoundLoaded] = useState(false);
   const currentRequestRef = useRef<{
     trackId: string;
     cancelled: boolean;
@@ -93,7 +92,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       clearInterval(interval);
     };
-  }, [url, soundLoaded]);
+  }, [url]);
   useEffect(() => {
     return () => {
       soundRef.current?.unloadAsync();
@@ -139,13 +138,13 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         soundRef.current = null;
       }
 
+      // Load new sound
       const { sound } = await Audio.Sound.createAsync(
         { uri: newUrl },
         { shouldPlay: true }
       );
 
       soundRef.current = sound;
-      setSoundLoaded(true);
 
       if (requestId && currentRequestRef.current) {
         if (
@@ -155,7 +154,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
           console.log("Play cancelled for request:", requestId);
           await sound.unloadAsync();
           soundRef.current = null;
-          setSoundLoaded(false);
           return;
         }
       }
@@ -163,7 +161,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
       setIsPlaying(true);
     } catch (error) {
       console.error("Replace error:", error);
-      setSoundLoaded(false);
     }
   };
   const handleSeek = async (value: number) => {
@@ -331,7 +328,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Clear player error:", error);
     }
-    setSoundLoaded(false);
+
     setTrack(null);
     setPlaylist([]);
     setIndex(0);
