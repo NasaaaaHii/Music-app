@@ -90,6 +90,7 @@ export default function Home() {
         "https://cdn-icons-png.flaticon.com/512/727/727245.png";
       return {
         id: item.id,
+
         playlist_name: item.playlist_name,
         playlist_contents: item.playlist_contents.map((item2: any) => {
           return item2.track_id;
@@ -107,6 +108,39 @@ export default function Home() {
         FIREBASE_AUTH.currentUser?.uid!
       );
       _topAlbum();
+      console.log(FIREBASE_AUTH.currentUser?.uid);
+
+      const newDataPlayList = await Promise.all(
+        dataPlaylist.map(async (item) => {
+          if (item.songs.length === 0) return item;
+
+          const x = await getTrack(item.songs[0]);
+          const data =
+            x.artwork?.["1000x1000"] ||
+            x.artwork?.["480x480"] ||
+            x.artwork?.["150x150"] ||
+            "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+          return {
+            ...item,
+            img: item.songs.length > 0 ? data : "",
+          };
+        })
+      );
+
+      console.log(newDataPlayList);
+
+      setPlaylistsDB(newDataPlayList);
+    } catch (e) {
+      const err = e as Error;
+      console.log(err.message);
+    }
+  }
+
+  async function loadPlaylist() {
+    try {
+      const dataPlaylist = await playlistBUS.getPlaylist(
+        FIREBASE_AUTH.currentUser?.uid!
+      );
       console.log(FIREBASE_AUTH.currentUser?.uid);
 
       const newDataPlayList = await Promise.all(
@@ -350,14 +384,15 @@ export default function Home() {
               </Text>
               <TouchableOpacity
                 onPress={() => {
-                  console.log("Navigate to all playlists");
+                  //console.log("Navigate to all playlists");
+                  loadPlaylist();
                 }}
               >
                 <Text
                   className="font-semibold text-base"
                   style={{ color: t.primary }}
                 >
-                  Xem tất cả
+                  Tải lại
                 </Text>
               </TouchableOpacity>
             </View>

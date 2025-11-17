@@ -145,13 +145,16 @@ export default function PlayLists() {
           })();
       }
     );
-    
-    const sub2 = DeviceEventEmitter.addListener("changePlaylistName", (status) => {
-      if (status === "success")
-        (async () => {
+
+    const sub2 = DeviceEventEmitter.addListener(
+      "changePlaylistName",
+      (status) => {
+        if (status === "success")
+          (async () => {
             await loadDB();
-        })();
-    });
+          })();
+      }
+    );
 
     return () => {
       sub.remove();
@@ -263,7 +266,7 @@ export default function PlayLists() {
                     pathname: "/modal/modify-playlist",
                     params: {
                       plid: params.idPlaylists,
-                      currname: DBPlaylist.name
+                      currname: DBPlaylist.name,
                     },
                   });
                 } catch (e: any) {
@@ -403,7 +406,7 @@ export default function PlayLists() {
                         DeviceEventEmitter.emit("playlistStatus", "success");
                       }}
                     >
-                      <X width={22} strokeWidth={1.5} />
+                      <X width={22} strokeWidth={1.5} color={"#FFF"} />
                     </Pressable>
                   </View>
                 </View>
